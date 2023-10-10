@@ -1,0 +1,5 @@
+The Seeds:
+	skyblock
+	fortheworthyskyblock
+
+Everything from this mod is only active on worlds with one of the skyblock seeds.
