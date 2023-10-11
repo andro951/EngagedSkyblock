@@ -1,3 +1,4 @@
 displayName = Engaged Skyblock
 author = andro951
 version = 0.1
+modReferences = androLib

@@ -1,5 +1,33 @@
-The Seeds:
-	skyblock
-	fortheworthyskyblock
+Engaged Skyblock is about staying Engaged while playing Skyblock instead of waiting for things to happen or doing the exact same thing for coutless hours.
 
-Everything from this mod is only active on worlds with one of the skyblock seeds.
+Note: Everything from this mod is only active on worlds with one of the skyblock seeds shown below.
+
+How do I make a Skyblock world?
+	The Seeds:
+		skyblock
+		fortheworthyskyblock
+
+	Use one of the seeds.  fortheworthyskyblock starts you with the same skyblock, but has the vanilla fortheworthy settings while playing.  (Tree bombs Beware)
+
+Engaged Features
+	-Speedy Growth: Trees/Grass/etc grow faster when a player (that is running/moving fast/jumping) is nearby.  (Similar to Twerking for trees from Minecraft)
+	-Mud to Clay:   Mud blocks with an empty tile above and not within 4 blocks of water (connected by mud or dirt) will dry out and turn into clay blocks.
+	-Hammers:       Hammers work as pickaxes (When holding right click).  Breaking blocks with a hammer has different effects than pickaxes:
+		-Wood -> Wood Chips
+		-Stone -> Sand
+
+	-Extra Extractinator Recipes:
+		-Wood Chips -> Sap, and bugs
+		-Sand -> Silt and 
+
+
+	-Recipes
+		Mud Block: [Sink] 1 Dirt Block + 1 Hay Block (Vanilla allows 1 Dirt Block for 1 Mud Block at a sink)
+		Silt Block: [Furnace] 1 Sand Block + 1 Clay Block
+
+	-NPC drops
+		Slimes: Acorns (5%), Grass Seeds (2%), Jungle Grass Seeds (2%)
+
+Progression Tips
+	-Liquids can be duplicated if done correctly.  (3:30 - https://www.youtube.com/watch?v=CLBMZyBfQXE)
+	-Making a sink consumes a bucket of water, be careful!

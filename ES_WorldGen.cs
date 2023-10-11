@@ -1,5 +1,4 @@
-﻿using EngagedSkyblock.Utility;
-using log4net;
+﻿using log4net;
 using MonoMod.RuntimeDetour;
 using ReLogic.Utilities;
 using System;
@@ -23,12 +22,13 @@ using Terraria.ModLoader.IO;
 using Terraria.Utilities;
 using Terraria.WorldBuilding;
 using static tModPorter.ProgressUpdate;
+using androLib.Common.Utility;
 
 namespace EngagedSkyblock {
 	public static class ES_WorldGen {
 
 		public static bool SkyblockWorld { get; private set; } = false;
-		public static bool testingInNormalWorld => true && Debugger.IsAttached;
+		public static bool testingInNormalWorld => false && Debugger.IsAttached;
 		public const string SkyblockSeedString = "skyblock";
 		public static int SkyblockSeed {
 			get {
@@ -207,12 +207,12 @@ namespace EngagedSkyblock {
 			public static void CreateSkyblock(int? SkyblockX = null, int? SkyblockY = null) {
 				int islandSurfaceHeight = SkyblockY ?? Main.spawnTileY + 1;
 				int islandCenterX = SkyblockX ?? Main.spawnTileX;
-				int totalBlocks = RandomNext(21, 48);
+				int totalBlocks = RandomNext(35, 48);
 				int minSizeX = 7;
 				int sizeX = RandomNext(minSizeX, 12);
 				int sizeY = totalBlocks.CeilingDivide(sizeX);
 				totalBlocks = sizeX * sizeY;
-				int dirtBlocks = RandomNext(15, totalBlocks - 5);
+				int dirtBlocks = RandomNext(30, totalBlocks - 5);
 				int dirtCount = dirtBlocks;
 				int islandLeft = islandCenterX - sizeX / 2;
 				int islandRight = islandLeft + sizeX - 1;
