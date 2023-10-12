@@ -61,12 +61,7 @@ namespace EngagedSkyblock {
 		public static bool IsSkyblockSeed(int seed) {
 			return seed == SkyblockSeed || seed == ForTheWorthySeed;
 		}
-		private static List<Hook> hooks = new();
 		public static void Load() {
-			hooks.Add(new(ModLoaderModSystemModifyWorldGenTasks, ModSystem_ModifyWorldGenTasks_Detour));
-			foreach (Hook hook in hooks) {
-				hook.Apply();
-			}
 
 			On_UIWorldCreation.OnFinishedSettingSeed += On_UIWorldCreation_OnFinishedSettingSeed;
 			On_UIWorldCreation.ProcessSpecialWorldSeeds += On_UIWorldCreation_ProcessSpecialWorldSeeds;
@@ -91,10 +86,10 @@ namespace EngagedSkyblock {
 			}
 		}
 
-		private delegate void orig_ModSystem_ModifyWorldGenTasks(List<GenPass> tasks, ref double totalWeight);
-		private delegate void hook_ModSystem_ModifyWorldGenTasks(orig_ModSystem_ModifyWorldGenTasks orig, List<GenPass> tasks, ref double totalWeight);
-		private static readonly MethodInfo ModLoaderModSystemModifyWorldGenTasks = typeof(SystemLoader).GetMethod("ModifyWorldGenTasks", BindingFlags.Public | BindingFlags.Static);
-		private static void ModSystem_ModifyWorldGenTasks_Detour(orig_ModSystem_ModifyWorldGenTasks orig, List<GenPass> tasks, ref double totalWeight) {
+		public delegate void orig_ModSystem_ModifyWorldGenTasks(List<GenPass> tasks, ref double totalWeight);
+		public delegate void hook_ModSystem_ModifyWorldGenTasks(orig_ModSystem_ModifyWorldGenTasks orig, List<GenPass> tasks, ref double totalWeight);
+		public static readonly MethodInfo ModLoaderModSystemModifyWorldGenTasks = typeof(SystemLoader).GetMethod("ModifyWorldGenTasks", BindingFlags.Public | BindingFlags.Static);
+		public static void ModSystem_ModifyWorldGenTasks_Detour(orig_ModSystem_ModifyWorldGenTasks orig, List<GenPass> tasks, ref double totalWeight) {
 			orig(tasks, ref totalWeight);
 			ModifyWorldGenTasks(tasks, ref totalWeight);
 		}

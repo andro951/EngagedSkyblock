@@ -226,5 +226,36 @@ namespace EngagedSkyblock {
 
 			return tiles;
 		}
+		
+		public Item miningTool = null;
+		public bool PostBreakTileShouldDoVanillaDrop(int x, int y, int type) {
+			if (miningTool.NullOrAir())
+				return true;
+
+			if (miningTool.TryGetGlobalItem(out GlobalHammer _)) {
+				int dropItemType = -1;
+				int stack = 1;
+				switch (type) {
+					case TileID.Stone:
+						dropItemType = ItemID.SandBlock;
+						break;
+					default:
+						if (TileID.Sets.IsShakeable[type]) {
+							Main.NewText("Drop Wood Chips");
+							//dropItemType = ModContent.ItemType<WoodChipps>();
+						}
+
+						break;
+				}
+
+				if (dropItemType >= 0) {
+					int num = Item.NewItem(WorldGen.GetItemSource_FromTileBreak(x, y), x * 16, y * 16, 16, 16, dropItemType, stack, noBroadcast: false, -1);
+					Main.item[num].TryCombiningIntoNearbyItems(num);
+					return false;
+				}
+			}
+
+			return true;
+		}
 	}
 }

@@ -9,7 +9,7 @@ using Terraria.ID;
 using Terraria.ModLoader;
 
 namespace EngagedSkyblock.Common.Globals {
-	public class ES_GlobalItem : GlobalItem {
+	public class GlobalHammer : GlobalItem {
 		public override bool AppliesToEntity(Item entity, bool lateInstantiation) {
 			return entity.hammer > 0;
 		}
@@ -26,7 +26,7 @@ namespace EngagedSkyblock.Common.Globals {
 			}
 		}
 
-		private static Action PostUseActions;
+		public static Action PostUseActions;
 		private void On_Player_ItemCheck_ManageRightClickFeatures(On_Player.orig_ItemCheck_ManageRightClickFeatures orig, Player self) {
 			if (!ES_WorldGen.SkyblockWorld) {
 				orig(self);
@@ -36,13 +36,15 @@ namespace EngagedSkyblock.Common.Globals {
 			orig(self);
 
 			Item heldItem = self.HeldItem;
-			if (Main.mouseRight && !heldItem.NullOrAir() && heldItem.TryGetGlobalItem(out ES_GlobalItem _)) {
+			if (Main.mouseRight && !heldItem.NullOrAir() && heldItem.TryGetGlobalItem(out GlobalHammer _)) {
 				self.controlUseItem = true;
-				heldItem.pick = heldItem.hammer;
+				int hammer = heldItem.hammer;
+				int pick = heldItem.pick;
+				heldItem.pick = Math.Max(pick, hammer);
 				heldItem.hammer = 0;
 				PostUseActions += () => {
-					heldItem.hammer = heldItem.pick;
-					heldItem.pick = 0;
+					heldItem.hammer = hammer;
+					heldItem.pick = pick;
 				};
 			}
 		}

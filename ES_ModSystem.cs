@@ -62,5 +62,8 @@ namespace EngagedSkyblock {
 				npcs.EnumerableToStringBlock(label, (netID) => netID.CSNPC().S());
 			}
 		}
+		public override void PostUpdateEverything() {
+			ES_Liquid.Update();
+		}
 	}
 }

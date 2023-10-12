@@ -1,7 +1,9 @@
-﻿using Microsoft.Xna.Framework;
+﻿using androLib.Common.Utility;
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Terraria;
@@ -11,8 +13,53 @@ using static EngagedSkyblock.Common.Globals.ES_GlobalTile;
 
 namespace EngagedSkyblock.Common.Globals {
 	public class ES_GlobalTile : GlobalTile {
+
+		public delegate bool orig_TileLoader_Drop(int x, int y, int type, bool includeLargeObjectDrops);
+		public delegate bool hook_TileLoader_Drop(orig_TileLoader_Drop orig, int x, int y, int type, bool includeLargeObjectDrops);
+		public static readonly MethodInfo TileLoaderDrop = typeof(TileLoader).GetMethod("Drop", BindingFlags.Public | BindingFlags.Static);
+		public static bool TileLoader_Drop_Detour(orig_TileLoader_Drop orig, int x, int y, int type, bool includeLargeObjectDrops) {
+			if (!ES_WorldGen.SkyblockWorld)
+				return orig(x, y, type, includeLargeObjectDrops);
+
+			foreach (KeyValuePair<int, Point> p in tilesJustHit) {
+				if (p.Value.X == x && p.Value.Y == y) {
+					if (Main.player[p.Key].TryGetModPlayer(out ES_ModPlayer eS_ModPlayer)) {
+						if (!eS_ModPlayer.PostBreakTileShouldDoVanillaDrop(x, y, type)) {
+							return false;
+						}
+					}
+
+					break;
+				}
+			}
+			
+			return orig(x, y, type, includeLargeObjectDrops);
+		}
+		public override void Load() {
+			On_Player.ItemCheck_UseMiningTools_ActuallyUseMiningTool += On_Player_ItemCheck_UseMiningTools_ActuallyUseMiningTool;
+		}
+		private static SortedDictionary<int, Point> tilesJustHit = new();
+		private void On_Player_ItemCheck_UseMiningTools_ActuallyUseMiningTool(On_Player.orig_ItemCheck_UseMiningTools_ActuallyUseMiningTool orig, Player self, Item sItem, out bool canHitWalls, int x, int y) {
+			if (!ES_WorldGen.SkyblockWorld) {
+				orig(self, sItem, out canHitWalls, x, y);
+				return;
+			}
+
+			bool save = self.TryGetModPlayer(out ES_ModPlayer eS_ModPlayer);
+			if (save) {
+				eS_ModPlayer.miningTool = sItem;
+				tilesJustHit.AddOrSet(self.whoAmI, new(x, y));
+				GlobalHammer.PostUseActions += () => {
+					eS_ModPlayer.miningTool = null;
+					tilesJustHit.Remove(self.whoAmI);
+				};
+			}
+
+			orig(self, sItem, out canHitWalls, x, y);
+		}
+
 		public override void RandomUpdate(int i, int j, int type) {
-			if (!ES_WorldGen.SkyblockWorld)// || !Main.dayTime)
+			if (!ES_WorldGen.SkyblockWorld)
 				return;
 			
 			if (MudThatCanConvertToClay(i, j)) {

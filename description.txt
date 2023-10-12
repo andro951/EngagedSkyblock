@@ -15,6 +15,13 @@ Engaged Features
 	-Hammers:       Hammers work as pickaxes (When holding right click).  Breaking blocks with a hammer has different effects than pickaxes:
 		-Wood -> Wood Chips
 		-Stone -> Sand
+	-Liquids:		Water and Lava combining mechanics changed.
+		-Infinite Stone and Silt Generator: If a water block and lava block are seperated by 1 block of air, stone (or silt 20%) will be generated between 
+			them with no loss of liquids.
+		-Liquids combining in other ways will create stone, silt or obsidian depending on how much lava is combined.
+			-90% of a lava block = obsidian
+			-25% to 90% of a lava block = silt
+			-0% to 25% of a lava block = stone
 
 	-Extra Extractinator Recipes:
 		-Wood Chips -> Sap, and bugs
