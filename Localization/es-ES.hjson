@@ -1,0 +1,26 @@
+#
+Mods: {
+	EngagedSkyblock: {
+		Conditions.SkyblockWorld: Skyblock World
+
+		Items: {
+			WoodChips: {
+				DisplayName: Astillas de madera
+				Tooltip:
+					'''
+					Haz clic derecho para separar las astillas de madera y ver qué puedes encontrar.
+					25% de probabilidad de soltar errores.
+					10% de probabilidad de soltar bellotas.
+					'''
+			}
+
+			RainTotem: {
+				// DisplayName: Rain Totem
+				// Tooltip: ""
+			}
+		}
+
+		// Tiles.RainTotem.MapEntry: Rain Totem
+		// Projectiles.SnowFlake.DisplayName: Snow Flake
+	}
+}

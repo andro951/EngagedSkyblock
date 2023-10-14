@@ -1,0 +1,26 @@
+#
+Mods: {
+	EngagedSkyblock: {
+		Conditions.SkyblockWorld: Skyblock World
+
+		Items: {
+			WoodChips: {
+				DisplayName: Trociny
+				Tooltip:
+					'''
+					Kliknij prawym przyciskiem myszy, aby rozbić zrębki i zobaczyć, co możesz znaleźć.
+					25% szans na upuszczenie błędów.
+					10% szans na upuszczenie żołędzi.
+					'''
+			}
+
+			RainTotem: {
+				// DisplayName: Rain Totem
+				// Tooltip: ""
+			}
+		}
+
+		// Tiles.RainTotem.MapEntry: Rain Totem
+		// Projectiles.SnowFlake.DisplayName: Snow Flake
+	}
+}

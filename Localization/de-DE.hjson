@@ -1,0 +1,26 @@
+#
+Mods: {
+	EngagedSkyblock: {
+		Conditions.SkyblockWorld: Skyblock World
+
+		Items: {
+			WoodChips: {
+				DisplayName: Holzspäne
+				Tooltip:
+					'''
+					Klicken Sie mit der rechten Maustaste, um die Holzspäne auseinanderzubrechen und zu sehen, was Sie finden können.
+					25 % Chance, Fehler fallen zu lassen.
+					10 % Chance, Eicheln fallen zu lassen.
+					'''
+			}
+
+			RainTotem: {
+				// DisplayName: Rain Totem
+				// Tooltip: ""
+			}
+		}
+
+		// Tiles.RainTotem.MapEntry: Rain Totem
+		// Projectiles.SnowFlake.DisplayName: Snow Flake
+	}
+}

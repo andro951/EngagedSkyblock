@@ -1,0 +1,26 @@
+#
+Mods: {
+	EngagedSkyblock: {
+		Conditions.SkyblockWorld: Skyblock World
+
+		Items: {
+			WoodChips: {
+				DisplayName: 木屑
+				Tooltip:
+					'''
+					右键单击以分解木片，看看你能找到什么。
+					25% 的几率掉落错误。
+					10% 的几率掉落橡子。
+					'''
+			}
+
+			RainTotem: {
+				// DisplayName: Rain Totem
+				// Tooltip: ""
+			}
+		}
+
+		// Tiles.RainTotem.MapEntry: Rain Totem
+		// Projectiles.SnowFlake.DisplayName: Snow Flake
+	}
+}

@@ -1,0 +1,26 @@
+#
+Mods: {
+	EngagedSkyblock: {
+		Conditions.SkyblockWorld: Skyblock World
+
+		Items: {
+			WoodChips: {
+				DisplayName: Trucioli di legno
+				Tooltip:
+					'''
+					Fai clic con il tasto destro per rompere i trucioli di legno e vedere cosa puoi trovare.
+					25% di possibilità di eliminare bug.
+					10% di possibilità di rilasciare ghiande.
+					'''
+			}
+
+			RainTotem: {
+				// DisplayName: Rain Totem
+				// Tooltip: ""
+			}
+		}
+
+		// Tiles.RainTotem.MapEntry: Rain Totem
+		// Projectiles.SnowFlake.DisplayName: Snow Flake
+	}
+}

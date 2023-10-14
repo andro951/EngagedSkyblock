@@ -1,0 +1,26 @@
+#
+Mods: {
+	EngagedSkyblock: {
+		Conditions.SkyblockWorld: Skyblock World
+
+		Items: {
+			WoodChips: {
+				DisplayName: Lascas de madeira
+				Tooltip:
+					'''
+					Clique com o botão direito para separar as lascas de madeira e ver o que você pode encontrar.
+					25% de chance de lançar bugs.
+					10% de chance de derrubar bolotas.
+					'''
+			}
+
+			RainTotem: {
+				// DisplayName: Rain Totem
+				// Tooltip: ""
+			}
+		}
+
+		// Tiles.RainTotem.MapEntry: Rain Totem
+		// Projectiles.SnowFlake.DisplayName: Snow Flake
+	}
+}

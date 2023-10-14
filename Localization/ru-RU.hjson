@@ -1,0 +1,26 @@
+#
+Mods: {
+	EngagedSkyblock: {
+		Conditions.SkyblockWorld: Skyblock World
+
+		Items: {
+			WoodChips: {
+				DisplayName: Щепки
+				Tooltip:
+					'''
+					Щелкните правой кнопкой мыши, чтобы разбить щепу и посмотреть, что вы сможете найти.
+					25% шанс выбросить ошибки.
+					10% шанс выбросить желуди.
+					'''
+			}
+
+			RainTotem: {
+				// DisplayName: Rain Totem
+				// Tooltip: ""
+			}
+		}
+
+		// Tiles.RainTotem.MapEntry: Rain Totem
+		// Projectiles.SnowFlake.DisplayName: Snow Flake
+	}
+}

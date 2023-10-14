@@ -1,6 +1,8 @@
 ﻿using androLib.Common.Utility;
 using EngagedSkyblock.Common.Globals;
 using EngagedSkyblock.Content.Dusts;
+using EngagedSkyblock.Items;
+using EngagedSkyblock.Weather;
 using Microsoft.VisualBasic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -14,6 +16,7 @@ using System.Threading.Tasks;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
+using Terraria.UI;
 
 namespace EngagedSkyblock {
 	public class ES_ModPlayer : ModPlayer {
@@ -38,10 +41,13 @@ namespace EngagedSkyblock {
 						ES_ModSystem.PrintNPCsThatDropItem(item.type);
 					}
 				}
+
+				if (Keys.NumPad2.Clicked()) {
+					Point cursor = Main.MouseWorld.ToTileCoordinates();
+					ES_WorldGen.GenerateTestingDesert(cursor.X, cursor.Y);
+				}
 			}
 		}
-
-
 
 		public void SpreadGrassAndGrowTrees() {
 			if (!ES_WorldGen.SkyblockWorld)
@@ -58,7 +64,6 @@ namespace EngagedSkyblock {
 		private static readonly MethodInfo updateWorld_UndergroundTileMethodInfo = typeof(WorldGen).GetMethod("UpdateWorld_UndergroundTile", BindingFlags.NonPublic | BindingFlags.Static);
 		private delegate void UpdateWorld_UndergroundTileDelegate(int i, int j, bool checkNPCSpawns, int wallDist);
 		UpdateWorld_UndergroundTileDelegate UpdateWorld_UndergroundTile = (UpdateWorld_UndergroundTileDelegate)Delegate.CreateDelegate(typeof(UpdateWorld_UndergroundTileDelegate), null, updateWorld_UndergroundTileMethodInfo);
-		
 		private void UpdateWorldTiles() {
 			double worldUpdateRate = WorldGen.GetWorldUpdateRate();
 			if (worldUpdateRate == 0)
@@ -97,11 +102,18 @@ namespace EngagedSkyblock {
 			Dust.NewDust(point.ToWorldCoordinates(Main.rand.NextFloat(8f), Main.rand.NextFloat(8f)), 1, 1, ModContent.DustType<GrowthDust>());
 		}
 		private static bool BlockCanGrow(int x, int y) {
+			if (y == 0)
+				return false;
+
 			Tile tile = Main.tile[x, y];
 			int tileType = tile.TileType;
 			bool surfaceBlockThatCangrow = tile.HasTile && !Main.tile[x, y -1].HasTile && (BlocksThatCanGrow.Contains(tileType) || WallsThatCanGrow.Contains(tile.WallType));
 
-			return surfaceBlockThatCangrow || ES_GlobalTile.MudThatCanConvertToClay(x, y);
+			return surfaceBlockThatCangrow
+				|| ES_GlobalTile.MudThatCanConvertToClay(x, y)
+				|| ES_GlobalTile.SandThatCanHarden(x, y, out _)
+				|| ES_GlobalTile.OrganicCanBecomeFossil(x, y)
+			;
 		}
 		public static Point GetRandomFromList(List<Point> surfaceBlocks) {
 			if (surfaceBlocks.Count == 0)
@@ -183,36 +195,6 @@ namespace EngagedSkyblock {
 			WallID.CrimsonGrassUnsafe,
 			WallID.CrimstoneUnsafe,
 		};
-		//private void FindBlocksThatCanGrow(List<List<Point>> surfaceBlocks, out List<Point> blocksThatCanGrow) {
-		//	blocksThatCanGrow = new();
-		//	for (int i = 0; i < surfaceBlocks.Count; i++) {
-		//		List<Point> column = surfaceBlocks[i];
-		//		for (int j = 0; j < column.Count; j++) {
-		//			Point point = column[j];
-		//			Tile tile = Main.tile[point.X, point.Y];
-		//			if (BlocksThatCanGrow.Contains(tile.TileType) || WallsThatCanGrow.Contains(tile.WallType))
-		//				blocksThatCanGrow.Add(point);
-		//		}
-		//	}
-		//}
-		public static List<List<Point>> MakeCircleArray(Point center, float radius, bool excludeAir = false) {
-			List<List<Point>> circleArray = new();
-			for (int x = center.X - (int)radius; x <= center.X + (int)radius; x++) {
-				List<Point> column = new();
-				for (int y = center.Y - (int)radius; y <= center.Y + (int)radius; y++) {
-					if (new Vector2(x, y).Distance(center.ToVector2()) <= radius) {
-						if (excludeAir && !Main.tile[x, y].HasTile)
-							continue;
-
-						column.Add(new Point(x, y));
-					}
-				}
-
-				circleArray.Add(column);
-			}
-
-			return circleArray;
-		}
 		public static List<Point> GetTilesOfType(Point center, float radius, Func<int, int, bool> condition = null) {
 			List<Point> tiles = new();
 			for (int x = center.X - (int)radius; x <= center.X + (int)radius; x++) {
@@ -226,36 +208,9 @@ namespace EngagedSkyblock {
 
 			return tiles;
 		}
-		
-		public Item miningTool = null;
-		public bool PostBreakTileShouldDoVanillaDrop(int x, int y, int type) {
-			if (miningTool.NullOrAir())
-				return true;
-
-			if (miningTool.TryGetGlobalItem(out GlobalHammer _)) {
-				int dropItemType = -1;
-				int stack = 1;
-				switch (type) {
-					case TileID.Stone:
-						dropItemType = ItemID.SandBlock;
-						break;
-					default:
-						if (TileID.Sets.IsShakeable[type]) {
-							Main.NewText("Drop Wood Chips");
-							//dropItemType = ModContent.ItemType<WoodChipps>();
-						}
-
-						break;
-				}
-
-				if (dropItemType >= 0) {
-					int num = Item.NewItem(WorldGen.GetItemSource_FromTileBreak(x, y), x * 16, y * 16, 16, 16, dropItemType, stack, noBroadcast: false, -1);
-					Main.item[num].TryCombiningIntoNearbyItems(num);
-					return false;
-				}
-			}
-
-			return true;
+		public override void OnEnterWorld() {
+			if (Main.netMode == NetmodeID.MultiplayerClient)
+				ES_WorldGen.RequestSeedFromServer();
 		}
 	}
 }

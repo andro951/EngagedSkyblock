@@ -23,11 +23,18 @@ using Terraria.Utilities;
 using Terraria.WorldBuilding;
 using static tModPorter.ProgressUpdate;
 using androLib.Common.Utility;
+using KokoLib;
+using System.Threading;
+using static EngagedSkyblock.EngagedSkyblock;
+using EngagedSkyblock.Common.Globals;
 
 namespace EngagedSkyblock {
 	public static class ES_WorldGen {
 
-		public static bool SkyblockWorld { get; private set; } = false;
+		public static bool SkyblockWorld => skyblockWorld || testingInNormalWorld;
+		private static bool skyblockWorld = true;
+		public static void SetSkyblockWorld(bool value) => skyblockWorld = value;
+		public static bool CheckSkyblockSeed() => IsSkyblockSeed(Main.netMode == NetmodeID.Server ? Main.ActiveWorldFileData.SeedText : WorldGen.currentWorldSeed);
 		public static bool testingInNormalWorld => false && Debugger.IsAttached;
 		public const string SkyblockSeedString = "skyblock";
 		public static int SkyblockSeed {
@@ -94,6 +101,9 @@ namespace EngagedSkyblock {
 			ModifyWorldGenTasks(tasks, ref totalWeight);
 		}
 		private static void On_UIWorldCreation_ProcessSpecialWorldSeeds(On_UIWorldCreation.orig_ProcessSpecialWorldSeeds orig, string processedSeed) {
+			CheckUpdateSeed(ref processedSeed);
+
+			Main.ActiveWorldFileData.SetSeed(processedSeed);
 			if (processedSeed == ForTheWorthySeedString) {
 				orig("fortheworthy");
 			}
@@ -105,13 +115,16 @@ namespace EngagedSkyblock {
 		internal static Dictionary<string, GenPass> skyblockGenPasses = new();
 
 		private static void On_UIWorldCreation_OnFinishedSettingSeed(On_UIWorldCreation.orig_OnFinishedSettingSeed orig, UIWorldCreation self, string seed) {
+			CheckUpdateSeed(ref seed);
+
+			orig(self, seed);
+		}
+		private static void CheckUpdateSeed(ref string seed) {
 			if (seed.ToLower() == SkyblockSeedString)
 				seed = SkyblockSeedString;
 
 			if (seed.ToLower().Replace(" ", "") == ForTheWorthySeedString)
 				seed = ForTheWorthySeedString;
-
-			orig(self, seed);
 		}
 
 		internal static void ModifyWorldGenTasks(List<GenPass> tasks, ref double totalWeight) {
@@ -154,8 +167,71 @@ namespace EngagedSkyblock {
 		}
 
 		internal static void OnWorldLoad() {
-			SkyblockWorld = IsSkyblockSeed(WorldGen.currentWorldSeed) || testingInNormalWorld;
+			GetWorldSeed();
+			if (Main.netMode != NetmodeID.MultiplayerClient)
+				PostSeedSetup();
 		}
+		private static void PostSeedSetup() {
+			ES_ModSystem.SwitchStatueRecipesDisabled();
+			ES_GlobalTile.OnWorldLoad();
+			GlobalHammer.UpdateHammersAllowRepeatedRightclick();
+		}
+		private static void GetWorldSeed() {
+			if (Main.netMode != NetmodeID.MultiplayerClient) {
+				bool gotData = Main.ActiveWorldFileData.TryGetHeaderData<ES_ModSystem>(out TagCompound data);
+				if (gotData)
+					skyblockWorld = data.GetBool(ES_ModSystem.skyblockWorldKey);
+
+				if (!skyblockWorld) {
+					if (CheckSkyblockSeed()) {
+						skyblockWorld = true;
+					}
+					else if (!gotData) {
+						$"Failed to get header data.  Unable to determine if the world is a skyblock or not. Main.netmode: {Main.netMode}".LogSimple();
+					}
+				}
+			}
+		}
+		public static void RequestSeedFromServer() {
+			ModPacket modPacket = EngagedSkyblock.Instance.GetPacket();
+			modPacket.Write((byte)ModPacketID.RequestWorldSeedFromClient);
+			modPacket.Write(Main.myPlayer);
+			modPacket.Send();
+		}
+		internal static void RecieveWorldSeed(string seed) {
+			if (Main.netMode == NetmodeID.MultiplayerClient) {
+				WorldGen.currentWorldSeed = seed;
+				Main.ActiveWorldFileData.SetSeed(seed);
+				SetSkyblockWorld(CheckSkyblockSeed());
+				PostSeedSetup();
+				Main.NewText($"Recieved World Seed: {seed}");
+			}
+			else {
+				throw new Exception($"RecieveWorldSeed called.  Main.netMode: {Main.netMode}");
+			}
+		}
+
+		public static void GenerateTestingDesert(int x, int y) {
+			int sizeX = 25;
+			int sizeY = 15;
+			int xMin = sizeX + 2;
+			x = Math.Max(x, xMin);
+			int xMax = Main.maxTilesX - xMin;
+			x = Math.Min(x, xMax);
+			int yMin = sizeY + 4;
+			y = Math.Max(y, yMin);
+			int yMax = Main.maxTilesY - yMin;
+			y = Math.Min(y, yMax);
+			for (int i = x - sizeX; i < x + sizeX; i++) {
+				for (int j = y + sizeY - 2; j >= y - sizeY - 1; j--) {
+					WorldGen.PlaceTile(i, j, TileID.Sand, true, true);
+				}
+
+				WorldGen.PlaceTile(i, y + sizeY - 1, TileID.Sandstone, true, true);
+			}
+		}
+
+
 		public class MoveSpawnPass : GenPass {
 			public MoveSpawnPass() : base("Move Spawn to Skyblock Spawn", 1) {}
 

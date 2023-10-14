@@ -1,0 +1,26 @@
+#
+Mods: {
+	EngagedSkyblock: {
+		Conditions.SkyblockWorld: Skyblock World
+
+		Items: {
+			WoodChips: {
+				DisplayName: Wood Chips
+				Tooltip:
+					'''
+					Right click to break apart the Wood Chips to see what you can find.
+					25% chance to drop bugs.
+					10% chance to drop acorns.
+					'''
+			}
+
+			RainTotem: {
+				DisplayName: Rain Totem
+				Tooltip: ""
+			}
+		}
+
+		Tiles.RainTotem.MapEntry: Rain Totem
+		Projectiles.SnowFlake.DisplayName: Snow Flake
+	}
+}
