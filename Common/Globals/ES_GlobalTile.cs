@@ -505,7 +505,6 @@ namespace EngagedSkyblock.Common.Globals {
 			bool hasPath = FindPath(centerX, centerY, 0);
 
 			PathGrid = null;
-			//if (Debugger.IsAttached && resultPath != null) resultPath.LogSimpleNT();
 			resultPath = null;
 			countsAsPath = null;
 			countsAsTarget = null;
@@ -594,20 +593,9 @@ namespace EngagedSkyblock.Common.Globals {
 						continue;
 				}
 
-				if (FindPath(x2, y2, distance, directionID, fromDirection == directionID ? previousFrom : fromDirection)) {
-					if (Debugger.IsAttached) {
-						//resultPath is printed when the HasPath finishes.
-						if (resultPath == null) {
-							resultPath = $"({x2}, {y2})";
-						}
-						else {
-							resultPath += $", ({x2}, {y2})";
-						}
-					}
-
-					return true;
-				}
+				return FindPath(x2, y2, distance, directionID, fromDirection == directionID ? previousFrom : fromDirection);
 			}
+
 			return false;
 		}
 		/// <summary>
