@@ -22,6 +22,9 @@ namespace EngagedSkyblock.Common.Globals {
 			On_Player.ItemCheck_UseMiningTools_ActuallyUseMiningTool += On_Player_ItemCheck_UseMiningTools_ActuallyUseMiningTool;
 		}
 		internal static void OnWorldLoad() {
+			if (!ES_WorldGen.SkyblockWorld)
+				return;
+
 			if (Main.netMode == NetmodeID.MultiplayerClient)
 				return;
 

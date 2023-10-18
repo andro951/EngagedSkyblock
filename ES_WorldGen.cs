@@ -187,7 +187,7 @@ namespace EngagedSkyblock {
 				PostSeedSetup();
 		}
 		private static void PostSeedSetup() {
-			ES_ModSystem.SwitchStatueRecipesDisabled();
+			ES_ModSystem.SwitchDisabledRecipes();
 			ES_GlobalTile.OnWorldLoad();
 			GlobalHammer.UpdateHammersAllowRepeatedRightclick();
 		}

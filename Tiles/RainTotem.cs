@@ -40,6 +40,9 @@ namespace EngagedSkyblock.Tiles {
 			c.EmitDelegate(ModifyRainChance);
 		}
 		private static double ModifyRainChance(double chance) {
+			if (!ES_WorldGen.SkyblockWorld)
+				return chance;
+
 			if (TotemActive()) {
 				chance /= 10d;
 			}

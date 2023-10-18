@@ -22,14 +22,11 @@ using Terraria.IO;
 namespace EngagedSkyblock {
 	public class ES_ModSystem : ModSystem {
 		public override void OnWorldLoad() {
-			WorldLoadSetup();
+			ES_WorldGen.OnWorldLoad();//Should always be first here.  get's world seed
 		}
 		public const string skyblockWorldKey = "ES_SkyblockWorld";
 		public override void SaveWorldHeader(TagCompound tag) {
 			tag[skyblockWorldKey] = ES_WorldGen.CheckSkyblockSeed();
-		}
-		public static void WorldLoadSetup() {
-			ES_WorldGen.OnWorldLoad();//Should always be first here.  get's world seed
 		}
 		private static SortedDictionary<int, SortedSet<int>> AllItemDrops {
 			get {
@@ -91,7 +88,7 @@ namespace EngagedSkyblock {
 
 				if (IsActivatableStatue(item) && !statuesNotDisabled.Contains(i)) {
 					int blockType = i >= ItemID.LihzahrdStatue && i <= ItemID.LihzahrdGuardianStatue ? ItemID.LihzahrdBrick : ItemID.StoneBlock;
-					Recipe recipe = Recipe.Create(i).AddTile(TileID.HeavyWorkBench).AddIngredient(blockType, 50).Register();
+					Recipe.Create(i).AddTile(TileID.HeavyWorkBench).AddIngredient(blockType, 50).Register();
 				}
 			}
 
@@ -137,7 +134,7 @@ namespace EngagedSkyblock {
 			}
 		}
 		public static bool IsActivatableStatue(Item item) => !item.NullOrAir() && item.createTile == TileID.Statues || item.createTile == TileID.MushroomStatue || item.createTile == TileID.BoulderStatue;
-		public static void SwitchStatueRecipesDisabled() {
+		public static void SwitchDisabledRecipes() {
 			bool skyblockWorld = ES_WorldGen.SkyblockWorld;
 			for (int i = 0; i < Recipe.numRecipes; i++) {
 				Recipe recipe = Main.recipe[i];
@@ -211,6 +208,9 @@ namespace EngagedSkyblock {
 		}
 		public static Action PreUpdateWorldActions = null;
 		public override void PreUpdateWorld() {
+			if (!ES_WorldGen.SkyblockWorld)
+				return;
+
 			if (PreUpdateWorldActions != null) {
 				PreUpdateWorldActions();
 				PreUpdateWorldActions = null;

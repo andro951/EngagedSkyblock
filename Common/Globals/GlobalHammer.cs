@@ -35,6 +35,9 @@ namespace EngagedSkyblock.Common.Globals {
 		private void On_Player_ItemCheck_Inner(On_Player.orig_ItemCheck_Inner orig, Player self) {
 			orig(self);
 
+			if (!ES_WorldGen.SkyblockWorld)
+				return;
+
 			if (PostUseActions != null) {
 				PostUseActions();
 				PostUseActions = null;

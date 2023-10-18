@@ -10,6 +10,9 @@ using Terraria.ModLoader;
 namespace EngagedSkyblock.Common.Globals {
 	public class ExtractinatorItem : GlobalItem {
 		public override void ExtractinatorUse(int extractType, int extractinatorBlockType, ref int resultType, ref int resultStack) {
+			if (!ES_WorldGen.SkyblockWorld)
+				return;
+
 			if (extractType == ItemID.DesertFossil) {
 				if (Main.rand.Next(100) == 0) {
 					resultStack = 1;
