@@ -39,7 +39,13 @@ namespace EngagedSkyblock.Common.Globals {
 			foreach (KeyValuePair<int, Point> p in tilesJustHit) {
 				if (p.Value.X == x && p.Value.Y == y) {
 					bool returnFalse = !GlobalHammer.BreakTileWithHammerShouldDoVanillaDrop(x, y, type);
-					tilesJustHit.Remove(p.Key);
+                    Tile tile = Main.tile[x, y];
+					if (tile.HasTile && TileID.Sets.IsATreeTrunk[tile.TileType] && y < Main.maxTilesY - 1) {
+						tilesJustHit[p.Key] = p.Value + new Point(0, -1);
+					}
+					else {
+						tilesJustHit.Remove(p.Key);
+					}
 
 					if (returnFalse)
 						return false;
@@ -503,6 +509,7 @@ namespace EngagedSkyblock.Common.Globals {
 			PathGrid[centerX, centerY] = 0;
 
 			bool hasPath = FindPath(centerX, centerY, 0);
+			//if (Debugger.IsAttached) PrintPathGrid();
 
 			PathGrid = null;
 			resultPath = null;
@@ -510,6 +517,49 @@ namespace EngagedSkyblock.Common.Globals {
 			countsAsTarget = null;
 
 			return hasPath;
+		}
+		private static void PrintPathGrid() {
+			string path = "\n";
+			int longest = 0;
+			for (int x = xMin; x <= xMax; x++) {
+				for (int y = yMin; y <= yMax; y++) {
+					int pathGridValue = PathGrid[x, y];
+					string pathGridString = pathGridValue switch {
+						int.MaxValue => "X",
+						0 => "S",
+						_ => pathGridValue.ToString()
+					};
+
+					if (pathGridString.Length > longest)
+						longest = pathGridString.Length;
+				}
+			}
+
+			for (int y = yMin; y <= yMax; y++) {
+				bool first = true;
+				for (int x = xMin; x <= xMax; x++) {
+					if (first) {
+						first = false;
+					}
+					else {
+						path += ", ";
+					}
+
+					int pathGridValue = PathGrid[x, y];
+					string pathGridString = pathGridValue switch {
+						int.MaxValue => "X",
+						0 => "S",
+						_ => pathGridValue.ToString()
+					};
+
+					path += pathGridString.PadLeft(longest);
+				}
+
+				path += "\n";
+			}
+
+			path += "\n";
+			path.LogSimple();
 		}
 		private static int[,] PathGrid;
 		private static string resultPath;
@@ -528,11 +578,13 @@ namespace EngagedSkyblock.Common.Globals {
 		/// Searches for a path to a position satisfied by countsAsTarget only through positions satisfied by countsAsPath.<br/>
 		/// </summary>
 		private static bool FindPath(int x, int y, int currentDistance, int fromDirection = -1, int previousFrom = -1) {
+			//$"{x}, {y}, ({x + xStart}, {y + yStart}), currentDistance: {currentDistance}, fromDirection: {fromDirection}, previousFrom: {previousFrom}".LogSimple();
 			//opposite and previousOpposite are the opposite directionIDs for the path taken to get to this point.
 			//For instance, if the path taken to get here was directionID 0 (down), opposite will be 2 (up).
 			//previousFrom is used to track the previous x if fromDirection is tracking y or vice versa because the path should generally go away from previous paths.
 			int opposite = fromDirection >= 0 ? (fromDirection + 2) % 4 : -1;
 			int previousOpposite = previousFrom >= 0 ? (previousFrom + 2) % 4 : -1;
+			List<Func<bool>> directionsToCheck = new();
 			for (int directionID = 0; directionID < 4; directionID++) {
 				int i = directionID % 2;
 				int j = 1 - i;
@@ -581,19 +633,26 @@ namespace EngagedSkyblock.Common.Globals {
 				//Mark the grid with the distance required to get to this point on this path.
 				PathGrid[x2, y2] = distance;
 
-				if (!countsAsPath(realX, realY))
-					continue;
+				directionsToCheck.Add(() => {
+					if (!countsAsPath(realX, realY))
+						return false;
 
-				//Usually, the searches should only go out in 2 directions, an x direction and a y direction.
-				//However, there are some situations where backtracking is the only option, so only skip the backtrack path if the
-				//	backTrackX, backTrackY position isn't the starting point and doesn't count as a path.
-				if (previousOpposite == directionID) {
-					GetPreviousDirection(x + xStart, y + yStart, fromDirection, previousFrom, out int backTrackX, out int backTrackY);
-					if (backTrackX == centerX && backTrackY == centerY || countsAsPath(backTrackX, backTrackY))
-						continue;
-				}
+					//Usually, the searches should only go out in 2 directions, an x direction and a y direction.
+					//However, there are some situations where backtracking is the only option, so only skip the backtrack path if the
+					//	backTrackX, backTrackY position isn't the starting point and doesn't count as a path.
+					if (previousOpposite == directionID) {
+						GetPreviousDirection(x + xStart, y + yStart, fromDirection, previousFrom, out int backTrackX, out int backTrackY);
+						if (backTrackX == centerX && backTrackY == centerY || countsAsPath(backTrackX, backTrackY))
+							return false;
+					}
 
-				return FindPath(x2, y2, distance, directionID, fromDirection == directionID ? previousFrom : fromDirection);
+					return FindPath(x2, y2, distance, directionID, fromDirection == directionID ? previousFrom : fromDirection);
+				});
+			}
+
+			foreach (Func<bool> directionToCheck in directionsToCheck) {
+				if (directionToCheck())
+					return true;
 			}
 
 			return false;
