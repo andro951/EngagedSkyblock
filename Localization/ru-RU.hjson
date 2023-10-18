@@ -1,9 +1,17 @@
 #
 Mods: {
 	EngagedSkyblock: {
-		Conditions.SkyblockWorld: Skyblock World
-
 		Items: {
+			RainTotem: {
+				DisplayName: Rain Totem
+				Tooltip:
+					'''
+					Provides a 25% chance to rain every day when placed.
+					Rain in a snow biome or in high altitudes causes snow.
+					While snowing, snow blocks will occasionally spawn on the surface.
+					'''
+			}
+
 			WoodChips: {
 				DisplayName: Щепки
 				Tooltip:
@@ -14,13 +22,23 @@ Mods: {
 					'''
 			}
 
-			RainTotem: {
-				// DisplayName: Rain Totem
+			CrimsonAltar: {
+				// DisplayName: Crimson Altar
+				// Tooltip: ""
+			}
+
+			DemonAltar: {
+				// DisplayName: Demon Altar
 				// Tooltip: ""
 			}
 		}
 
-		// Tiles.RainTotem.MapEntry: Rain Totem
+		Tiles: {
+			// RainTotem.MapEntry: Rain Totem
+			// CrimsonAltar.MapEntry: Crimson Altar
+			// DemonAltar.MapEntry: Demon Altar
+		}
+
 		// Projectiles.SnowFlake.DisplayName: Snow Flake
 	}
 }

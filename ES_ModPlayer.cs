@@ -49,7 +49,7 @@ namespace EngagedSkyblock {
 			}
 		}
 
-		public void SpreadGrassAndGrowTrees() {
+		public void DoPlayerMovementTileGrowth() {
 			if (!ES_WorldGen.SkyblockWorld)
 				return;
 
@@ -77,7 +77,8 @@ namespace EngagedSkyblock {
 			int tilesToUpdate = tilesInt + (Main.rand.NextDouble() <= tilesToUpdateDouble - (double)tilesInt ? 1 : 0);
 			int num5 = 151;
 			int num6 = (int)Utils.Lerp(num5, (double)num5 * 2.8, Utils.Clamp((double)Main.maxTilesX / 4200.0 - 1.0, 0.0, 1.0));
-			List<Point> surfaceBlocks = GetTilesOfType(Player.Center.ToTileCoordinates(), growthRadius, BlockCanGrow);
+			Point playerCenterTile = Player.Center.ToTileCoordinates();
+			List<Point> surfaceBlocks = GetTilesOfType(playerCenterTile, growthRadius, BlockCanGrow);
 			double pointsChance = tilesToUpdate > 0 ? (double)surfaceBlocks.Count / tilesCount : 0d;
 			for (int j = 0; j < tilesToUpdate; j++) {
 				if (Main.rand.Next(5) == 0) {
@@ -98,22 +99,22 @@ namespace EngagedSkyblock {
 				}
 			}
 		}
+
 		public static void GrowDust(Point point) {
 			Dust.NewDust(point.ToWorldCoordinates(Main.rand.NextFloat(8f), Main.rand.NextFloat(8f)), 1, 1, ModContent.DustType<GrowthDust>());
 		}
 		private static bool BlockCanGrow(int x, int y) {
-			if (y == 0)
-				return false;
-
 			Tile tile = Main.tile[x, y];
 			int tileType = tile.TileType;
-			bool surfaceBlockThatCangrow = tile.HasTile && !Main.tile[x, y -1].HasTile && (BlocksThatCanGrow.Contains(tileType) || WallsThatCanGrow.Contains(tile.WallType));
-
-			return surfaceBlockThatCangrow
-				|| ES_GlobalTile.MudThatCanConvertToClay(x, y)
-				|| ES_GlobalTile.SandThatCanHarden(x, y, out _)
-				|| ES_GlobalTile.OrganicCanBecomeFossil(x, y)
+			bool canGrow = tile.HasTile && y != 0 && !Main.tile[x, y - 1].HasTile && BlocksThatCanGrow.Contains(tileType)
+			//|| WallsThatCanGrow.Contains(tile.WallType)
+			|| tile.WallType == WallID.SpiderUnsafe && NearbyTile(x, y, 4, (i, j) => WorldGen.SolidTile(i, j))
+			|| ES_GlobalTile.MudThatCanConvertToClay(x, y, tileType)
+			|| ES_GlobalTile.SandThatCanHarden(x, y, tileType, out _)
+			|| ES_GlobalTile.OrganicCanBecomeFossil(x, y, tileType)
 			;
+
+			return canGrow;
 		}
 		public static Point GetRandomFromList(List<Point> surfaceBlocks) {
 			if (surfaceBlocks.Count == 0)
@@ -187,14 +188,15 @@ namespace EngagedSkyblock {
 			}
 		}
 		private static SortedSet<int> blocksThatCanGrow = null;
-		private static SortedSet<int> WallsThatCanGrow = new() {
-			WallID.EbonstoneUnsafe,
-			WallID.SpiderUnsafe,
-			WallID.CorruptGrassUnsafe,
-			WallID.HallowedGrassUnsafe,
-			WallID.CrimsonGrassUnsafe,
-			WallID.CrimstoneUnsafe,
-		};
+		//public static SortedSet<int> WallsThatCanGrow = new() {
+		//	WallID.EbonstoneUnsafe,
+		//	//WallID.SpiderUnsafe,//Covered on it's own.
+		//	WallID.CorruptGrassUnsafe,
+		//	WallID.HallowedGrassUnsafe,
+		//	WallID.CrimsonGrassUnsafe,
+		//	WallID.CrimstoneUnsafe,
+		//};
+
 		public static List<Point> GetTilesOfType(Point center, float radius, Func<int, int, bool> condition = null) {
 			List<Point> tiles = new();
 			for (int x = center.X - (int)radius; x <= center.X + (int)radius; x++) {
@@ -207,6 +209,20 @@ namespace EngagedSkyblock {
 			}
 
 			return tiles;
+		}
+		private static bool NearbyTile(int x, int y, float radius, Func<int, int, bool> condition = null) {
+			int xStart = Math.Max(0, x - (int)radius);
+			int xEnd = Math.Min(Main.maxTilesX - 1, x + (int)radius);
+			int yStart = Math.Max(0, y - (int)radius);
+			int yEnd = Math.Min(Main.maxTilesY - 1, y + (int)radius);
+			for (int i = xStart; i <= xEnd; i++) {
+				for (int j = yStart; j <= yEnd; j++) {
+					if (condition(i, j))
+						return true;
+				}
+			}
+
+			return false;
 		}
 		public override void OnEnterWorld() {
 			if (Main.netMode == NetmodeID.MultiplayerClient)

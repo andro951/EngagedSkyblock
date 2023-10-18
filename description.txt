@@ -15,10 +15,12 @@ Engaged Features
 	-Hardening Sand: Sand blocks with 4 blocks above it that can fall like sand/silt can randomly turn to hardened sand.
 	-Desert Fossils: Organic blocks that are burred (covered on all 4 sides) in a desert will eventually turn into desert fossils.
 		-Conversion chances: Bone blocks(20%), Poo(10%), glowing mushroom(4%), Living tree leaves(2%), cactus(1.5%), bamboo(1.5%), pumpkin(1.5%), hay(1%), wood (0.1%)
+
 	-Hammers: Hammers work as pickaxes (When holding right click).  Breaking blocks with a hammer has different effects than pickaxes:
 		-Wood -> Wood Chips
 		-Stone -> Sand
 		-Snow Block -> Ice Block (Requires having 1 snow block on top of another and converts the 2 blocks into 1 ice block)
+
 	-Liquids: Water and Lava combining mechanics changed.
 		-Infinite Stone and Silt Generator: If a water block and lava block are separated by 1 block of air, stone (or silt 20%) will be generated between 
 			them with no loss of liquids.
@@ -26,6 +28,7 @@ Engaged Features
 			-90% of a lava block = obsidian
 			-25% to 90% of a lava block = silt
 			-0% to 25% of a lava block = stone
+
 	-Liquids On blocks:
 		-Sand that is touched by lava will turn to sandstone after a short delay.
 		-Ice touching water on 2 sides will turn the water to ice.
@@ -41,13 +44,19 @@ Engaged Features
 
 	-Rain Totem: Makes rain 10 times more likely when placed in the world.  (Also makes snowballs fall if snowing.)
 
+	-Spiders: Placing bugs in a chest will slowly consume the bugs to convert nearby walls to spider walls.
+		(Only converts walls when no players can see the chest and block being converted.) "Silk is nice, but is it worth the price?"
+
 	-Extra Extractinator Recipes:
-		Silt/Slush/Desert Fossils have a small chance to drop Demonite/Crimtane depending on the world evil type.
+		Demonite/Crimtane: Silt/Slush/Desert Fossils have a small chance to drop Demonite/Crimtane depending on the world evil type.
+		Life Crystal: 1% from Desert Fossils
 
 	-Recipes
 		Mud Block: [Sink] 1 Dirt Block + 1 Hay Block (Vanilla allows 1 Dirt Block for 1 Mud Block at a sink)
 		Silt Block: [Furnace] 1 Sand Block + 1 Clay Block
 		Snow Block: [None] 15 snowballs
+		Dungeon Bricks: 40 stone + 10 obsidian + 1 dye to make the 50 dungeon bricks of the matching color.
+			Every basic dye color has an associated dungeon brick recipe (even if the colors match poorly)
 
 	-NPC drops
 		Slimes: Acorns (5%), Grass Seeds (2%), Jungle Grass Seeds (2%)

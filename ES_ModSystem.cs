@@ -124,6 +124,17 @@ namespace EngagedSkyblock {
 			Recipe.Create(ItemID.MudBlock, 2).AddTile(TileID.Sinks).AddIngredient(ItemID.DirtBlock, 1).AddIngredient(ItemID.Hay, 1).Register();
 			Recipe.Create(ItemID.SiltBlock, 2).AddTile(TileID.Furnaces).AddIngredient(ItemID.ClayBlock, 1).AddIngredient(ItemID.SandBlock, 1).Register();
 			Recipe.Create(ItemID.SnowBlock).AddIngredient(ItemID.Snowball, 15).Register();
+			(int, int[])[] allDyes = new (int, int[])[] {
+				(ItemID.AncientBlueDungeonBrick, new int[] { ItemID.CyanDye, ItemID.SkyBlueDye, ItemID.BlueDye, ItemID.BlackDye }),
+				(ItemID.AncientGreenDungeonBrick, new int[] { ItemID.LimeDye, ItemID.GreenDye, ItemID.YellowDye, ItemID.TealDye }),
+				(ItemID.AncientPinkDungeonBrick, new int[] { ItemID.PinkDye, ItemID.RedDye, ItemID.VioletDye, ItemID.OrangeDye, ItemID.PurpleDye }),
+			};
+
+			foreach ((int brickType, int[] dyes) in allDyes) {
+				foreach (int dye in dyes) {
+					Recipe.Create(brickType, 50).AddIngredient(ItemID.StoneBlock, 40).AddIngredient(ItemID.Obsidian, 10).AddIngredient(dye).Register();
+				}
+			}
 		}
 		public static bool IsActivatableStatue(Item item) => !item.NullOrAir() && item.createTile == TileID.Statues || item.createTile == TileID.MushroomStatue || item.createTile == TileID.BoulderStatue;
 		public static void SwitchStatueRecipesDisabled() {
@@ -181,6 +192,9 @@ namespace EngagedSkyblock {
 			ReflectionHelper.CallNonPublicStaticMethod("Terraria", typeof(Recipe).Name, "CreateRequiredItemQuickLookups");
 			ShimmerTransforms.UpdateRecipeSets();
 		}
+		public override void PostAddRecipes() {
+			GlobalHammer.PostSetupRecipes();
+		}
 
 		internal static void PrintNPCsThatDropItem(int itemType) {
 			if (itemType <= 0 || itemType >= ItemLoader.ItemCount)
@@ -203,11 +217,12 @@ namespace EngagedSkyblock {
 			}
 		}
 		public override void PostUpdateEverything() {
+			if (!ES_WorldGen.SkyblockWorld)
+				return;
+
 			ES_Liquid.Update();
 			ES_Weather.Update();
-		}
-		public override void PostAddRecipes() {
-			GlobalHammer.PostSetupRecipes();
+			ES_GlobalWall.Update();
 		}
 	}
 }

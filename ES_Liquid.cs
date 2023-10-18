@@ -332,9 +332,6 @@ namespace EngagedSkyblock {
 			}
 		}
 		public static void Update() {
-			if (!ES_WorldGen.SkyblockWorld)
-				return;
-
 			for (int i = combineInfos.Count - 1; i >= 0; i--) {
 				CombineInfo combineInfo = combineInfos[i];
 				ref int delay = ref combineInfo.Delay;

@@ -48,15 +48,28 @@ namespace EngagedSkyblock.Common.Globals {
 
 			Item heldItem = player.HeldItem;
 			if (ItemLoader.CanUseItem(heldItem, player) && !player.mouseInterface && !heldItem.NullOrAir() && heldItem.TryGetGlobalItem(out GlobalHammer _)) {
+				Tile target = Main.tile[Player.tileTargetX, Player.tileTargetY];
 				player.controlUseItem = true;
-				int hammer = heldItem.hammer;
-				int pick = heldItem.pick;
-				heldItem.pick = Math.Max(pick, hammer);
-				heldItem.hammer = 0;
-				PostUseActions += () => {
-					heldItem.hammer = hammer;
-					heldItem.pick = pick;
-				};
+				if (target.HasTile && TileID.Sets.IsATreeTrunk[target.TileType]) {
+					int hammer = heldItem.hammer;
+					int axe = heldItem.axe;
+					heldItem.axe = Math.Max(axe, hammer);
+					heldItem.hammer = 0;
+					PostUseActions += () => {
+						heldItem.hammer = hammer;
+						heldItem.axe = axe;
+					};
+				}
+				else {
+					int hammer = heldItem.hammer;
+					int pick = heldItem.pick;
+					heldItem.pick = Math.Max(pick, hammer);
+					heldItem.hammer = 0;
+					PostUseActions += () => {
+						heldItem.hammer = hammer;
+						heldItem.pick = pick;
+					};
+				}
 			}
 
 			return false;
@@ -112,10 +125,14 @@ namespace EngagedSkyblock.Common.Globals {
 				}
 			}
 
-			if (TileID.Sets.IsShakeable[type]) {
-				Main.NewText("Drop Wood Chips");
-				//dropItemType = ModContent.ItemType<WoodChipps>();
-				dropItemType = -1;//Temp
+			if (TileID.Sets.IsATreeTrunk[type]) {
+				if (type >= TileID.TreeTopaz && type <= TileID.GemSaplings) {
+					dropItemType = ItemID.SandBlock;
+				}
+				else {
+					dropItemType = ModContent.ItemType<WoodChips>();
+				}
+				
 				return true;
 			}
 

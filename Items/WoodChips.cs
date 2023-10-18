@@ -30,8 +30,8 @@ namespace EngagedSkyblock.Items {
 			Item.maxStack = Terraria.Item.CommonMaxStack;
 		}
 		private static float ConfigChance = 1f;
-		private static float AcornChance = 0.1f;
-		private static float DropChance = 0.25f;
+		private static float AcornChance = 0.25f;
+		private static float BugDropChance = 0.1f;
 		public override void ModifyItemLoot(ItemLoot itemLoot) {
 			//Acorn
 			itemLoot.Add(new BasicDropRule(ItemID.Acorn, AcornChance, ConfigChance));
@@ -39,11 +39,11 @@ namespace EngagedSkyblock.Items {
 			//Bugs
 			IEnumerable<Item> bugs = RecipeGroup.recipeGroups[RecipeGroupID.Bugs].ValidItems.Select(t => t.CSI());
 			IEnumerable<DropData> bugDrops = bugs.Select(i => new DropData(i.type, 1f / i.bait));
-			itemLoot.Add(new OneFromWeightedOptionsNotScaledWithLuckDropRule(DropChance, bugDrops, null));
+			itemLoot.Add(new OneFromWeightedOptionsNotScaledWithLuckDropRule(BugDropChance, bugDrops, null));
 		}
 		public override string LocalizationTooltip => 
 			$"Right click to break apart the Wood Chips to see what you can find.\n" +
-			$"{DropChance.PercentString()} chance to drop bugs.\n" +
+			$"{BugDropChance.PercentString()} chance to drop bugs.\n" +
 			$"{AcornChance.PercentString()} chance to drop acorns.";
 	}
 }

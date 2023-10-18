@@ -9,6 +9,8 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Content\Dusts\GrowthDust.png" />
+    <None Remove="Items\Sprites\CrimsonAltar.png" />
+    <None Remove="Items\Sprites\DemonAltar.png" />
     <None Remove="Items\Sprites\RainTotem.png" />
     <None Remove="Items\Sprites\WoodChips.png" />
     <None Remove="Localization\de-DE.hjson" />
@@ -20,6 +22,8 @@
     <None Remove="Localization\pt-BR.hjson" />
     <None Remove="Localization\ru-RU.hjson" />
     <None Remove="Localization\zh-Hans.hjson" />
+    <None Remove="Tiles\Sprites\CrimsonAltar.png" />
+    <None Remove="Tiles\Sprites\DemonAltar.png" />
     <None Remove="Weather\SnowFlake.png" />
   </ItemGroup>
   <ItemGroup>

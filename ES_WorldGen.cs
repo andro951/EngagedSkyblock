@@ -27,6 +27,7 @@ using KokoLib;
 using System.Threading;
 using static EngagedSkyblock.EngagedSkyblock;
 using EngagedSkyblock.Common.Globals;
+using Microsoft.Xna.Framework;
 
 namespace EngagedSkyblock {
 	public static class ES_WorldGen {
@@ -69,13 +70,31 @@ namespace EngagedSkyblock {
 			return seed == SkyblockSeed || seed == ForTheWorthySeed;
 		}
 		public static void Load() {
-
 			On_UIWorldCreation.OnFinishedSettingSeed += On_UIWorldCreation_OnFinishedSettingSeed;
 			On_UIWorldCreation.ProcessSpecialWorldSeeds += On_UIWorldCreation_ProcessSpecialWorldSeeds;
 			On_WorldGen.UpdateWorld_Inner += On_WorldGen_UpdateWorld_Inner;
 			MoveSpawnPass.AddPass();
 			ClearEverythingPass.AddPass();
 			SkyblockPass.AddPass();
+		}
+
+		public delegate void orig_ModSystem_PostWorldGen();
+		public delegate void hook_ModSystem_PostWordGen(orig_ModSystem_PostWorldGen orig);
+		public static readonly MethodInfo ModLoaderModSystemPostWorldGen = typeof(SystemLoader).GetMethod("PostWorldGen", BindingFlags.Public | BindingFlags.Static);
+		public static void ModSystem_PostWorldGen_Detour(orig_ModSystem_PostWorldGen orig) {
+			orig();
+			PostWorldGenDetour();
+		}
+		private static void PostWorldGenDetour() {
+			if (!SkyblockWorld)
+				return;
+
+			//If spawn point changed, another mod probably did something in PostWorldGen(), so recreate the skyblock.
+			if (MoveSpawnPass.SpawnChanged()) {
+				foreach (var pass in skyblockGenPasses) {
+					pass.Value.Apply(null, null);
+				}
+			}
 		}
 
 		private static void On_WorldGen_UpdateWorld_Inner(On_WorldGen.orig_UpdateWorld_Inner orig) {
@@ -89,7 +108,7 @@ namespace EngagedSkyblock {
 					continue;
 
 				if (player.TryGetModPlayer(out ES_ModPlayer eS_ModPlayer))
-					eS_ModPlayer.SpreadGrassAndGrowTrees();
+					eS_ModPlayer.DoPlayerMovementTileGrowth();
 			}
 		}
 
@@ -155,10 +174,6 @@ namespace EngagedSkyblock {
 							passedGrassWall = true;
 						}
 					}
-				}
-
-				foreach (var pass in skyblockGenPasses) {
-					tasks.Add(pass.Value);
 				}
 
 				postActions?.Invoke();
@@ -234,11 +249,25 @@ namespace EngagedSkyblock {
 
 		public class MoveSpawnPass : GenPass {
 			public MoveSpawnPass() : base("Move Spawn to Skyblock Spawn", 1) {}
-
+			private static int spawnX;
+			private static int spawnY;
+			public static bool SpawnChanged() => spawnX != Main.spawnTileX || spawnY != Main.spawnTileY;
 			protected override void ApplyPass(GenerationProgress progress, GameConfiguration configuration) {
-				progress.Message = "Moving Spawn to Skyblock Spawn";
+				if (progress != null)
+					progress.Message = "Moving Spawn to Skyblock Spawn";
+
 				Main.spawnTileX = Main.maxTilesX / 2 - 5;
 				Main.spawnTileY = (int)Main.worldSurface - 55;
+
+				Vector2 npcSapwn = new Point(Main.spawnTileX, Main.spawnTileY - 2).ToWorldCoordinates();
+				foreach (NPC npc in Main.npc) {
+					if (npc.active && npc.townNPC) {
+						npc.position = npcSapwn;
+						if (Main.getGoodWorld && npc.netID != NPCID.Demolitionist || !Main.getGoodWorld && npc.netID != NPCID.Guide) {
+							npc.active = false;
+						}
+					}
+				}
 			}
 			internal static void AddPass() {
 				MoveSpawnPass pass = new();
@@ -254,12 +283,18 @@ namespace EngagedSkyblock {
 				skyblockGenPasses.Add(pass.Name, pass);
 			}
 			protected override void ApplyPass(GenerationProgress progress, GameConfiguration configuration) {
-				progress.Message = "Voiding The World";
+				if (progress != null)
+					progress.Message = "Voiding The World";
+
 				for (int x = 0; x < Main.maxTilesX; x++) {
 					for (int y = 0; y < Main.maxTilesY; y++) {
 						Tile tile = Main.tile[x, y];
 						tile.ClearEverything();
 					}
+				}
+
+				for (int i = 0; i < Main.chest.Length; i++) {
+					Main.chest[i] = null;
 				}
 			}
 		}
@@ -272,7 +307,9 @@ namespace EngagedSkyblock {
 			}
 			private static int RandomNext(int min, int max) => GenBase._random.Next(min, max + 1);
 			protected override void ApplyPass(GenerationProgress progress, GameConfiguration configuration) {
-				progress.Message = "Blocking the Sky";
+				if (progress != null)
+					progress.Message = "Blocking the Sky";
+
 				CreateSkyblock();
 			}
 			public static void CreateSkyblock(int? SkyblockX = null, int? SkyblockY = null) {
@@ -435,133 +472,6 @@ namespace EngagedSkyblock {
 				}
 
 				//Tree
-				for (int y = islandSurfaceHeight - 2; y <= islandSurfaceHeight + 4; y++) {
-					for (int x = islandSurfaceLayerRight; x >= islandSurfaceLayerLeft; x--) {
-						//Try grow a tree
-						if (WorldGen.GrowEpicTree(x, y))
-							break;
-					}
-				}
-			}
-			public static void CreateSkyblockOld(int? SkyblockX = null, int? SkyblockY = null) {
-				int islandSurfaceHeight = SkyblockY ?? Main.spawnTileY + 1;
-				int islandCenterX = SkyblockX ?? Main.spawnTileX;
-				int minBlocks = 20;
-				int maxBlocks = 40;
-				int totalDirt = RandomNext(15, 30);
-				int totalStone = RandomNext(minBlocks - totalDirt, maxBlocks - totalDirt);
-				int totalBlocks = totalDirt + totalStone;
-				int minSizeX = 7;
-				int maxSizeX = 10;
-				int islandSizeX = RandomNext(minSizeX, maxSizeX);
-				int minSizeY = totalBlocks.CeilingDivide(islandSizeX);
-				int islandSizeY = RandomNext(minSizeY, minSizeY + 2);
-				int dirtCount = totalDirt;
-				int stoneCount = totalStone;
-				int blockCount = dirtCount + stoneCount;
-				int emptySpaceToFill = islandSizeX * islandSizeY - blockCount;
-				int islandLeft = islandCenterX - islandSizeX / 2;
-				int islandRight = islandLeft + islandSizeX - 1;
-				int yLayer = islandSurfaceHeight;
-				int minTopCut = 1;
-				int maxTopCut = 2;
-				int leftTopCut = emptySpaceToFill > 0 && islandSizeX > minSizeX ? RandomNext(minTopCut, maxTopCut) : minTopCut;
-				emptySpaceToFill -= leftTopCut - minTopCut;
-				int rightTopCut = emptySpaceToFill > 0 && islandSizeX > minSizeX ? RandomNext(minTopCut, maxTopCut) : minTopCut;
-				emptySpaceToFill -= rightTopCut - 1;
-				int islandSurfaceLayerLeft = islandLeft + leftTopCut;
-				int islandSurfaceLayerRight = islandRight - rightTopCut;
-				for (int x = islandSurfaceLayerLeft; x <= islandSurfaceLayerRight && blockCount > 0; x++) {
-					ushort tileType = dirtCount / 2 > x - islandSurfaceLayerLeft || dirtCount > islandSurfaceLayerRight - x ? TileID.Dirt : TileID.Stone;
-					blockCount--;
-					if (tileType == TileID.Dirt) {
-						dirtCount--;
-						WorldGen.PlaceTile(x, yLayer, tileType, true, true);
-						tileType = TileID.Grass;
-					}
-					else {
-						stoneCount--;
-					}
-
-					WorldGen.PlaceTile(x, yLayer, tileType, true, true);
-				}
-
-				yLayer++;
-
-				int yMiddleLayer = islandSurfaceHeight + islandSizeY / 2;
-				if (leftTopCut > 1)
-					leftTopCut--;
-
-				if (rightTopCut > 1)
-					rightTopCut--;
-
-				for (; yLayer <= yMiddleLayer; yLayer++) {
-					leftTopCut = leftTopCut > 0 && emptySpaceToFill > 0 && islandSizeX > minSizeX ? RandomNext(0, leftTopCut) : 0;
-					emptySpaceToFill -= leftTopCut;
-					rightTopCut = rightTopCut > 0 && emptySpaceToFill > 0 && islandSizeX > minSizeX ? RandomNext(0, rightTopCut) : 0;
-					emptySpaceToFill -= rightTopCut;
-
-					int xStart = islandLeft + leftTopCut;
-					int xEnd = islandRight - rightTopCut;
-					for (int x = xStart; x <= xEnd && blockCount > 0; x++) {
-						ushort tileType = dirtCount / 2 > x - xStart || dirtCount > xEnd - x ? TileID.Dirt : TileID.Stone;
-						blockCount--;
-						if (tileType == TileID.Dirt) {
-							if (!Main.tile[x, yLayer - 1].HasTile) {
-								WorldGen.PlaceTile(x, yLayer, tileType, true, true);
-								tileType = TileID.Grass;
-							}
-
-							dirtCount--;
-						}
-						else {
-							stoneCount--;
-						}
-
-						WorldGen.PlaceTile(x, yLayer, tileType, true, true);
-					}
-				}
-
-				int startBottomYlayer = yLayer;
-				int yBottomLayer = islandSurfaceHeight + islandSizeY - 1;
-				int bottomLayersCount = yBottomLayer - startBottomYlayer + 1;
-				int emptyToFillBefore = emptySpaceToFill;
-				for (; yLayer <= yBottomLayer; yLayer++) {
-					int layersLeft = yBottomLayer - yLayer;
-					//int cut = (bottomLayersCount - layersLeft) * (islandSizeX / 2 - 1) / bottomLayersCount;
-					int cut = (bottomLayersCount - layersLeft) * emptyToFillBefore / bottomLayersCount / 2;
-					int leftLowerCut = layersLeft > 0 ? cut : emptySpaceToFill / 2;
-					int rightLowerCut = layersLeft > 0 ? cut : emptySpaceToFill - leftLowerCut;
-					emptySpaceToFill -= leftLowerCut + rightLowerCut;
-					int xStart = islandLeft + leftLowerCut;
-					int xEnd = islandRight - rightLowerCut;
-					for (int x = xStart; x <= xEnd && blockCount > 0; x++) {
-						ushort tileType = dirtCount > 0 && (dirtCount / 2 > x - xStart || dirtCount > xEnd - x) ? TileID.Dirt : TileID.Stone;
-						blockCount--;
-						if (tileType == TileID.Dirt) {
-							dirtCount--;
-						}
-						else {
-							stoneCount--;
-						}
-
-						WorldGen.PlaceTile(x, yLayer, tileType, true, true);
-					}
-				}
-
-				for (int x = islandSurfaceLayerLeft; x <= islandSurfaceLayerRight; x++) {
-					int chestNum = WorldGen.PlaceChest(x, islandSurfaceHeight - 1);
-					if (chestNum < 0)
-						continue;
-
-					Item[] inv = Main.chest[chestNum].item;
-					int index = 0;
-					//inv[index++].SetDefaults(ItemID.Acorn);
-					inv[index++].SetDefaults(ItemID.WaterBucket);
-					inv[index++].SetDefaults(ItemID.LavaBucket);
-					break;
-				}
-
 				for (int y = islandSurfaceHeight - 2; y <= islandSurfaceHeight + 4; y++) {
 					for (int x = islandSurfaceLayerRight; x >= islandSurfaceLayerLeft; x--) {
 						//Try grow a tree

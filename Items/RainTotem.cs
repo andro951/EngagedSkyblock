@@ -16,10 +16,6 @@ namespace EngagedSkyblock.Items {
 		private static int wood = 50;
 		private static int gems = 2;
 		private static float rainChance = 0.25f;
-		public override void SetStaticDefaults() {
-
-			base.SetStaticDefaults();
-		}
 		public override void SetDefaults() {
 			Item.createTile = ModContent.TileType<Tiles.RainTotem>();
 			Item.value = ItemID.Wood.CSI().value * wood + ItemID.Topaz.CSI().value * gems;
