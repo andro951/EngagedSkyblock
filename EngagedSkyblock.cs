@@ -1,6 +1,7 @@
 using androLib.Localization;
 using EngagedSkyblock.Common.Globals;
 using EngagedSkyblock.Items;
+using EngagedSkyblock.Tiles.TileEntities;
 using EngagedSkyblock.Weather;
 using MonoMod.RuntimeDetour;
 using System;
@@ -37,19 +38,20 @@ namespace EngagedSkyblock
 			RequestWorldSeedFromClient,
 			SendWorldSeedToClient,
 			HitTile,
+			ChestIndicatorInfo,
 		}
 		public override void HandlePacket(BinaryReader reader, int whoAmI) {
 			if (Main.netMode == NetmodeID.Server) {
 				byte packetID = reader.ReadByte();
-				switch (packetID) {
-					case (byte)ModPacketID.RequestWorldSeedFromClient:
+				switch ((ModPacketID)packetID) {
+					case ModPacketID.RequestWorldSeedFromClient:
 						int client = reader.ReadInt32();
 						ModPacket modPacket = Instance.GetPacket();
 						modPacket.Write((byte)ModPacketID.SendWorldSeedToClient);
 						modPacket.Write(Main.ActiveWorldFileData.SeedText);
 						modPacket.Send(client);
 						break;
-					case (byte)ModPacketID.HitTile:
+					case ModPacketID.HitTile:
 						int x = reader.ReadInt32();
 						int y = reader.ReadInt32();
 						int playerWhoAmI = reader.ReadInt32();
@@ -61,10 +63,13 @@ namespace EngagedSkyblock
 			}
 			else if (Main.netMode == NetmodeID.MultiplayerClient) {
 				byte packetID = reader.ReadByte();
-				switch (packetID) {
-					case (byte)ModPacketID.SendWorldSeedToClient:
+				switch ((ModPacketID)packetID) {
+					case ModPacketID.SendWorldSeedToClient:
 						string seed = reader.ReadString();
 						ES_WorldGen.RecieveWorldSeed(seed);
+						break;
+					case ModPacketID.ChestIndicatorInfo:
+						ChestIndicatorInfo.Read(reader);
 						break;
 					default:
 						throw new Exception($"Recieved packet ID: {packetID}.  Not recognized.");

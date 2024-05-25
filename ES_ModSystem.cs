@@ -129,9 +129,21 @@ namespace EngagedSkyblock {
 
 			foreach ((int brickType, int[] dyes) in allDyes) {
 				foreach (int dye in dyes) {
-					Recipe.Create(brickType, 50).AddIngredient(ItemID.StoneBlock, 40).AddIngredient(ItemID.Obsidian, 10).AddIngredient(dye).Register();
+					Recipe.Create(brickType, 25).AddIngredient(ItemID.StoneBlock, 20).AddIngredient(ItemID.Obsidian, 5).AddIngredient(dye).Register();
 				}
 			}
+
+			int[] templeTraps = new int[] {
+				ItemID.SpikyBallTrap,
+				ItemID.SpearTrap,
+				ItemID.SuperDartTrap,
+				ItemID.FlameTrap,
+			};
+
+			Recipe.Create(ItemID.WoodenSpike, 10).AddTile(TileID.HeavyWorkBench).AddIngredient(ItemID.RichMahogany, 10).AddIngredient(ItemID.Vine).AddIngredient(ItemID.VialofVenom, 1).Register();
+			Recipe.Create(ItemID.DartTrap).AddTile(TileID.HeavyWorkBench).AddIngredient(ItemID.StoneBlock, 100).Register();
+			Recipe.Create(ItemID.GeyserTrap).AddTile(TileID.HeavyWorkBench).AddIngredient(ItemID.StoneBlock, 100).Register();
+			Recipe.Create(ItemID.Spike).AddTile(TileID.HeavyWorkBench).AddIngredient(ItemID.StoneBlock, 10).Register();
 		}
 		public static bool IsActivatableStatue(Item item) => !item.NullOrAir() && item.createTile == TileID.Statues || item.createTile == TileID.MushroomStatue || item.createTile == TileID.BoulderStatue;
 		public static void SwitchDisabledRecipes() {
@@ -185,8 +197,8 @@ namespace EngagedSkyblock {
 
 			Recipe.UpdateWhichItemsAreMaterials();
 			Recipe.UpdateWhichItemsAreCrafted();
-			ReflectionHelper.CallNonPublicStaticMethod("Terraria", typeof(Recipe).Name, "UpdateMaterialFieldForAllRecipes");
-			ReflectionHelper.CallNonPublicStaticMethod("Terraria", typeof(Recipe).Name, "CreateRequiredItemQuickLookups");
+			ReflectionHelper.CallNonPublicStaticMethod(typeof(Recipe), "UpdateMaterialFieldForAllRecipes");
+			ReflectionHelper.CallNonPublicStaticMethod(typeof(Recipe), "CreateRequiredItemQuickLookups");
 			ShimmerTransforms.UpdateRecipeSets();
 		}
 		public override void PostAddRecipes() {

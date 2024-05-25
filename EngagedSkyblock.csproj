@@ -1,17 +1,22 @@
-<?xml version="1.0" encoding="utf-8"?>
+
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\tModLoader.targets" />
   <PropertyGroup>
     <AssemblyName>EngagedSkyblock</AssemblyName>
-    <TargetFramework>net6.0</TargetFramework>
-    <PlatformTarget>AnyCPU</PlatformTarget>
+	  <TargetFramework>net8.0</TargetFramework>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Content\Dusts\GrowthDust.png" />
+    <None Remove="Items\AutoExtractors\AutoExtractor.png" />
+    <None Remove="Items\AutoExtractors\AutoExtractorTier2.png" />
+    <None Remove="Items\AutoExtractors\AutoExtractorTier3.png" />
+    <None Remove="Items\AutoExtractors\AutoExtractorTier4.png" />
+    <None Remove="Items\AutoExtractors\AutoExtractorTier5.png" />
     <None Remove="Items\Sprites\CrimsonAltar.png" />
     <None Remove="Items\Sprites\DemonAltar.png" />
     <None Remove="Items\Sprites\RainTotem.png" />
+    <None Remove="Items\Sprites\WoodBlockBreaker.png" />
     <None Remove="Items\Sprites\WoodChips.png" />
     <None Remove="Localization\de-DE.hjson" />
     <None Remove="Localization\en-US.hjson" />
@@ -22,12 +27,17 @@
     <None Remove="Localization\pt-BR.hjson" />
     <None Remove="Localization\ru-RU.hjson" />
     <None Remove="Localization\zh-Hans.hjson" />
+    <None Remove="Tiles\AutoExtractors\AutoExtractorTier1Tile.png" />
+    <None Remove="Tiles\AutoExtractors\AutoExtractorTier2Tile.png" />
+    <None Remove="Tiles\AutoExtractors\AutoExtractorTier3Tile.png" />
+    <None Remove="Tiles\AutoExtractors\AutoExtractorTier4Tile.png" />
+    <None Remove="Tiles\AutoExtractors\AutoExtractorTier5Tile.png" />
+    <None Remove="Tiles\AutoExtractors\ExtractinatorDust.png" />
+    <None Remove="Tiles\AutoExtractors\ExtractinatorIndicatorDot.png" />
     <None Remove="Tiles\Sprites\CrimsonAltar.png" />
     <None Remove="Tiles\Sprites\DemonAltar.png" />
+    <None Remove="Tiles\Sprites\WoodBlockBreaker.png" />
     <None Remove="Weather\SnowFlake.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="tModLoader.CodeAssist" Version="0.1.*" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ModLib\KokoLib\Emitters\" />
@@ -39,6 +49,9 @@
   <ItemGroup>
     <Reference Include="KokoLib">
       <HintPath>..\Mods\lib\KokoLib.dll</HintPath>
+    </Reference>
+    <Reference Include="TileFunctionLibrary">
+      <HintPath>..\Mods\lib\TileFunctionLibrary.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>

@@ -46,6 +46,22 @@ namespace EngagedSkyblock {
 					Point cursor = Main.MouseWorld.ToTileCoordinates();
 					ES_WorldGen.GenerateTestingDesert(cursor.X, cursor.Y);
 				}
+
+				if (Keys.NumPad3.Clicked()) {
+					Point cursor = Main.MouseWorld.ToTileCoordinates();
+					Tile left = Main.tile[cursor.X - 1, cursor.Y];
+					Tile leftUp = Main.tile[cursor.X - 1, cursor.Y - 1];
+					if (!left.HasTile && !leftUp.HasTile) {
+						//WorldGen.PlaceTile(cursor.X, cursor.Y, TileID.LargePiles, true, true, style: 24);
+						ES_GlobalWall.PlaceLargePile(cursor.X, cursor.Y, 24);
+					}
+					else {
+						//WorldGen.PlaceSmallPile(cursor.X, cursor.Y, 31, 1);
+						//ES_GlobalWall.PlaceSmallPile(cursor.X, cursor.Y, 32, true);
+					}
+					//Main.tile[cursor.X, cursor.Y].TileFrameX = 54 * 2;
+					//Main.tile[cursor.X, cursor.Y].TileFrameY = 36 * 7;
+				}
 			}
 		}
 
@@ -109,6 +125,7 @@ namespace EngagedSkyblock {
 			bool canGrow = tile.HasTile && y != 0 && !Main.tile[x, y - 1].HasTile && BlocksThatCanGrow.Contains(tileType)
 			//|| WallsThatCanGrow.Contains(tile.WallType)
 			|| tile.WallType == WallID.SpiderUnsafe && NearbyTile(x, y, 4, (i, j) => WorldGen.SolidTile(i, j))
+			|| ES_GlobalTile.MudThatCanConvertToChlorophyte(x, y, tileType)
 			|| ES_GlobalTile.MudThatCanConvertToClay(x, y, tileType)
 			|| ES_GlobalTile.SandThatCanHarden(x, y, tileType, out _)
 			|| ES_GlobalTile.OrganicCanBecomeFossil(x, y, tileType)

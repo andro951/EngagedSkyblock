@@ -3,6 +3,7 @@ using androLib.Common.Utility.Compairers;
 using androLib.Common.Utility.PathFinders;
 using EngagedSkyblock.Weather;
 using Microsoft.Xna.Framework;
+using MonoMod.Cil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,7 +21,9 @@ namespace EngagedSkyblock.Common.Globals {
 	public class ES_GlobalTile : GlobalTile {
 		public override void Load() {
 			On_Player.ItemCheck_UseMiningTools_ActuallyUseMiningTool += On_Player_ItemCheck_UseMiningTools_ActuallyUseMiningTool;
+			IL_WorldGen.hardUpdateWorld += IL_WorldGen_hardUpdateWorld;
 		}
+
 		internal static void OnWorldLoad() {
 			if (!ES_WorldGen.SkyblockWorld)
 				return;
@@ -101,6 +104,10 @@ namespace EngagedSkyblock.Common.Globals {
 		}
 		private static bool CheckForTileUpdates(int i, int j, int type) {
 			int tileToPlace = defaultTileToPlace;
+			if (MudThatCanConvertToChlorophyte(i, j, type)) {
+				tileToPlace = TileID.Chlorophyte;
+				goto PlaceTile;
+			}
 
 			if (MudThatCanConvertToClay(i, j, type)) {
 				tileToPlace = TileID.ClayBlock;
@@ -134,6 +141,7 @@ namespace EngagedSkyblock.Common.Globals {
 
 			return false;
 		}
+
 		public static void PlaceTile(int i, int j, int tileToPlace, bool growDust = true) {
 			WorldGen.PlaceTile(i, j, tileToPlace, true, true);
 			if (growDust)
@@ -153,25 +161,28 @@ namespace EngagedSkyblock.Common.Globals {
 			if (!TileID.Sets.Ices[type])
 				return false;
 
-			if (!WorldGen.InWorld(i, j, 1))
-				return false;
-
-			Tile[] directions = DirectionID.GetTiles(i, j);
 			List<int> ices = new();
-			for (int k = DirectionID.None + 1; k < DirectionID.Count; k++) {
-				Tile waterTile = directions[k];
-				if (waterTile.LiquidAmount <= 0 || waterTile.LiquidType != LiquidID.Water)
+			for (int directionID = 0; directionID < 4; directionID++) {
+				PathDirectionID.GetDirection(directionID, out int x, out int y);
+				x += i;
+				y += j;
+
+				if (!WorldGen.InWorld(x, y))
 					continue;
 
-				int x = i;
-				int y = j;
-				DirectionID.ApplyDirection(ref x, ref y, k);
-				if (!WorldGen.InWorld(x, y, 1))
+				Tile waterTile = Main.tile[x, y];
+				if (waterTile.HasTile || waterTile.LiquidAmount <= 0 || waterTile.LiquidType != LiquidID.Water)
 					continue;
 
-				Tile[] iceDirections = DirectionID.GetTiles(x, y);
-				for (int l = DirectionID.None + 1; l < DirectionID.Count; l++) {
-					Tile iceTile = iceDirections[l];
+				for (int iceDirection = 0; iceDirection < 4; iceDirection++) {
+					PathDirectionID.GetDirection(iceDirection, out int x2, out int y2);
+					x2 += x;
+					y2 += y;
+
+					if (!WorldGen.InWorld(x2, y2))
+						continue;
+
+					Tile iceTile = Main.tile[x2, y2];
 					if (!iceTile.HasTile || !TileID.Sets.Ices[iceTile.TileType])
 						continue;
 
@@ -443,6 +454,59 @@ namespace EngagedSkyblock.Common.Globals {
 		#endregion
 
 		#region Mud Conversion
+
+		public static bool MudThatCanConvertToChlorophyte(int i, int j, int type) {
+			if (!Main.hardMode)
+				return false;
+
+			if (type != TileID.Mud)
+				return false;
+
+			if (false && !Main.rand.NextBool(8640000))//TODO: remove false
+				return false;
+
+			for (int directionID = 0; directionID < 4; directionID++) {
+				PathDirectionID.GetDirection(directionID, out int x, out int y);
+				Tile checkTile = Main.tile[i + x, j + y];
+				if (!checkTile.HasTile || checkTile.TileType != TileID.Mud && checkTile.TileType != TileID.JungleGrass && checkTile.TileType != TileID.ClayBlock)
+					 return false;
+			}
+
+			 return true;
+		}
+		private void IL_WorldGen_hardUpdateWorld(ILContext il) {
+			// if ((double)j > (Main.worldSurface + Main.rockLayer) / 2.0 || Main.remixWorld)
+			//IL_017f: ldarg.1
+			//IL_0180: conv.r8
+			//IL_0181: ldsfld float64 Terraria.Main::worldSurface
+			//IL_0186: ldsfld float64 Terraria.Main::rockLayer
+			//IL_018b: add
+			//IL_018c: ldc.r8 2
+			//IL_0195: div
+			//IL_0196: bgt.s IL_01a2
+
+			//IL_0198: ldsfld bool Terraria.Main::remixWorld
+
+			var c = new ILCursor(il);
+
+			if (!c.TryGotoNext(MoveType.After,
+				i => i.MatchLdarg(1),
+				i => i.MatchConvR8(),
+				i => i.MatchLdsfld(typeof(Main), nameof(Main.worldSurface)),
+				i => i.MatchLdsfld(typeof(Main), nameof(Main.rockLayer)),
+				i => i.MatchAdd(),
+				i => i.MatchLdcR8(2),
+				i => i.MatchDiv(),
+				i => i.MatchBgt(out _),
+				i => i.MatchLdsfld(typeof(Main), nameof(Main.remixWorld))
+				)) {
+				throw new Exception("Failed to find instructions IL_WorldGen_hardUpdateWorld");
+			}
+
+			c.EmitDelegate((bool remixWorld) => {
+				return remixWorld || ES_WorldGen.SkyblockWorld;
+			});
+		}
 
 		public static bool MudThatCanConvertToClay(int i, int j, int type) {
 			if (Main.raining)

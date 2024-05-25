@@ -84,7 +84,7 @@ namespace EngagedSkyblock.Common.Globals {
 			int chestsChecked = 0;
 			for (; checkChestNum < Main.chest.Length && chestsChecked <= chestsPerTick; checkChestNum++) {
 				Chest chest = Main.chest[checkChestNum];
-				if (chest == null || bugFilledChests.ContainsKey(checkChestNum))
+				if (chest == null || Main.tile[chest.x, chest.y] is Tile tile && (!tile.HasTile || !TileID.Sets.BasicChest[tile.TileType]) || bugFilledChests.ContainsKey(checkChestNum))
 					continue;
 
 				Item[] inv = chest.item;
@@ -155,6 +155,23 @@ namespace EngagedSkyblock.Common.Globals {
 			foreach ((int key, int value) in bugFilledChestsEdits) {
 				if (value == -1) {
 					bugFilledChests.Remove(key);
+					ref Chest chest = ref Main.chest[key];
+					Tile left = Main.tile[chest.x - 1, chest.y];
+					Tile leftUp = Main.tile[chest.x - 1, chest.y - 1];
+					for (int chestX = chest.x; chestX <= chest.x + 1; chestX++) {
+						for (int chestY = chest.y; chestY <= chest.y + 1; chestY++) {
+							Main.tile[chestX, chestY].ClearTile();
+						}
+					}
+
+					if (!left.HasTile && !leftUp.HasTile) {
+						PlaceLargePile(chest.x, chest.y + 1, 24);
+					}
+					else {
+						PlaceSmallPile(chest.x, chest.y + 1, 32, true);
+					}
+
+					chest = null;
 				}
 				else {
 					bugFilledChests[key] = value;
@@ -162,6 +179,46 @@ namespace EngagedSkyblock.Common.Globals {
 			}
 
 			SpiderGridManager.CleanUp(bugFilledChests);
+		}
+
+		/// <param name="i">middle x</param>
+		/// <param name="j">lower y</param>
+		public static void PlaceLargePile(int i, int j, int largePileID) {
+			for (int y = 0; y >= -1; y--) {
+				for (int x = -1; x <= 1; x++) {
+					int targetX = x + i;
+					int targetY = y + j;
+					Tile target = Main.tile[targetX, targetY];
+					target.ClearTile();
+					target.HasTile = true;
+					target.TileType = TileID.LargePiles;
+					target.TileFrameY = (short)((y + 1) * 18);
+					target.TileFrameX = (short)((largePileID * 3 + x + 1) * 18);
+				}
+			}
+		}
+
+		/// <param name="i">left x</param>
+		/// <param name="j">y</param>
+		public static void PlaceSmallPile(int i, int j, int smallPileID, bool mediumPiles) {
+			if (mediumPiles) {
+				for (int x = 0; x <= 1; x++) {
+					int targetX = x + i;
+					Tile target = Main.tile[targetX, j];
+					target.ClearTile();
+					target.HasTile = true;
+					target.TileType = TileID.SmallPiles;
+					target.TileFrameY = 18;
+					target.TileFrameX = (short)((smallPileID * 2 + x) * 18);
+				}
+			}
+			else {
+				Tile target = Main.tile[i, j];
+				target.ClearTile();
+				target.HasTile = true;
+				target.TileType = TileID.SmallPiles;
+				target.TileFrameX = (short)(smallPileID * 18);
+			}
 		}
 		private const int HighestBaitLimit = 100;
 		private static bool GetBugInfo(int chestNum, bool eatBug, out int highestBait, out int totalBait, out int totalStack, out Action EatBug) {
