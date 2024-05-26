@@ -163,6 +163,7 @@ namespace EngagedSkyblock {
 			CheckUpdateSeed(ref processedSeed);
 
 			Main.ActiveWorldFileData.SetSeed(processedSeed);
+			SetSkyblockWorld(CheckSkyblockSeed());
 			if (processedSeed == ForTheWorthySeedString) {
 				orig("fortheworthy");
 			}
