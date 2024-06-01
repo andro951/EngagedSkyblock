@@ -52,12 +52,11 @@ namespace EngagedSkyblock.Items {
 			ModifyRecipe(recipe);
 			recipe.Register();
 		}
-		public override string Texture => (GetType().Namespace + ".Sprites." + Name).Replace('.', '/');
 
 		public override string LocalizationTooltip =>
 			$"Breaks blocks that is points to when receiving a wiring signal.\n" +
 			$"Pickaxe Power: {pickaxePower}\n" +
-			$"Cooldown: {(miningCooldown / 60f).PercentString()} seconds\n" +
+			$"Cooldown: {(miningCooldown / 60f).S(2)} seconds\n" +
 			$"Can be used to break blocks that require {Lang.GetItemNameValue(PrimaryMaterial)} to break." +
 			$"If wire is placed on this block, it will only try to mine each time it receives a wiring signal.";
 	}

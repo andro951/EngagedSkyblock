@@ -51,41 +51,47 @@ namespace EngagedSkyblock.Tiles {
 			TileID.Sets.DontDrawTileSliced[Type] = true;
 			TileID.Sets.IgnoresNearbyHalfbricksWhenDrawn[Type] = true;
 
-			//Main.tileNoAttach[Type] = true;
 			Main.tileLavaDeath[Type] = false;
 			Main.tileFrameImportant[Type] = true;
 			Main.tileSolid[Type] = true;
 			Main.tileBlockLight[Type] = true;
-			//Main.tileSolidTop[Type] = true;
 
 			Color mapColor = MapColor;
 			mapColor.A = byte.MaxValue;
 			AddMapEntry(mapColor, CreateMapEntryName());
 
 			TileObjectData.newTile.CopyFrom(TileObjectData.Style1x1);
-			TileObjectData.newTile.HookPostPlaceMyPlayer = new PlacementHook(Entity.Hook_AfterPlacement, -1, 0, false);
-			//TileObjectData.newTile.anch
-			//TileObjectData.newTile.CoordinateHeights = new[] { 16 };
-			//TileObjectData.newTile.AnchorInvalidTiles = new int[] {
-			//	TileID.MagicalIceBlock,
-			//	TileID.Boulder,
-			//	TileID.BouncyBoulder,
-			//	TileID.LifeCrystalBoulder,
-			//	TileID.RollingCactus
-			//};
+			TileObjectData.newTile.UsesCustomCanPlace = false;
+			TileObjectData.newTile.AnchorBottom = AnchorData.Empty;
 			TileObjectData.newTile.StyleHorizontal = true;
 			TileObjectData.newTile.LavaDeath = false;
-			//TileObjectData.newTile.CoordinateWidth = 16;
-			//TileObjectData.newTile.CoordinatePadding = 2;
-			TileObjectData.newTile.AnchorBottom = new AnchorData(AnchorType.EmptyTile | AnchorType.SolidSide | AnchorType.SolidTile | AnchorType.SolidWithTop | AnchorType.SolidSide | AnchorType.Table | AnchorType.None | AnchorType.Tree | AnchorType.SolidBottom | AnchorType.PlatformNonHammered | AnchorType.AlternateTile | AnchorType.PlanterBox | AnchorType.Platform, TileObjectData.newTile.Width, 0);
-
-			//TileObjectData.newTile.AnchorBottom = 
-			//TileObjectData.newTile.AnchorBottom = new AnchorData(AnchorType.SolidTile | AnchorType.SolidWithTop | AnchorType.SolidSide | AnchorType.Table, TileObjectData.newTile.Width, 0);
 			TileObjectData.addTile(Type);
 		}
 		public override void Load() {
 			On_TileObject.DrawPreview += On_TileObject_DrawPreview;
+			On_Player.UpdatePlacementPreview += On_Player_UpdatePlacementPreview;
+			On_TileObjectData.CustomPlace += On_TileObjectData_CustomPlace;
 			On_WorldGen.KillTile_GetItemDrops += On_WorldGen_KillTile_GetItemDrops;
+		}
+
+		private static bool updatePlacementPreview = false;
+		private void On_Player_UpdatePlacementPreview(On_Player.orig_UpdatePlacementPreview orig, Player self, Item sItem) {
+			if (sItem.createTile != -1) {
+				ModTile modTile = ModContent.GetModTile(sItem.createTile);
+				if (modTile is Tiles.BlockBreaker or Tiles.BlockPlacer) {
+					updatePlacementPreview = true;
+				}
+			}
+			
+			orig(self, sItem);
+			updatePlacementPreview = false;
+		}
+
+		private bool On_TileObjectData_CustomPlace(On_TileObjectData.orig_CustomPlace orig, int type, int style) {
+			if (updatePlacementPreview)
+				return true;
+
+			return orig(type, style);
 		}
 		private SortedDictionary<int, Point> chestDatas = new();
 		private void On_WorldGen_KillTile_GetItemDrops(On_WorldGen.orig_KillTile_GetItemDrops orig, int x, int y, Tile tileCache, out int dropItem, out int dropItemStack, out int secondaryItem, out int secondaryItemStack, bool includeLargeObjectDrops) {
@@ -156,7 +162,7 @@ namespace EngagedSkyblock.Tiles {
 
 				int[] chestNums = chestDatas.Keys.ToArray();
 				foreach (int chestNum in chestNums) {
-					if (!foundChests.Contains(chestNum)) {
+					if (!foundChests.Contains(chestNum) || Main.netMode != NetmodeID.SinglePlayer && Chest.UsingChest(chestNum) > -1) {
 						chestDatas.Remove(chestNum);
 					}
 				}
@@ -182,8 +188,8 @@ namespace EngagedSkyblock.Tiles {
 		}
 		private void On_TileObject_DrawPreview(On_TileObject.orig_DrawPreview orig, SpriteBatch sb, TileObjectPreviewData op, Vector2 position) {
 			ModTile modTile = ModContent.GetModTile(op.Type);
-			if (modTile is Tiles.BlockBreaker) {
-				GetDirectionID(op.Coordinates.X, op.Coordinates.Y, out short directionID);
+			if (modTile is Tiles.BlockBreaker or Tiles.BlockPlacer) {
+				Main.LocalPlayer.GetDirectionID(op.Coordinates.X, op.Coordinates.Y, out short directionID);
 				op.Style = directionID;
 			}
 
@@ -193,35 +199,15 @@ namespace EngagedSkyblock.Tiles {
 		public override string Texture => (GetType().Namespace + ".Sprites." + Name).Replace('.', '/');
 		public override void PlaceInWorld(int i, int j, Item item) {
 			Tile tile = Main.tile[i, j];
-			GetDirectionID(i, j, out short directionID);
-			//Point playerCenterTile = Main.LocalPlayer.Center.ToTileCoordinates();
-			//int xDiff = i - playerCenterTile.X;
-			//int yDiff = j - playerCenterTile.Y;
-			//int directionID;
-			//if (Math.Abs(xDiff) >= Math.Abs(yDiff)) {
-			//	directionID = xDiff > 0 ? PathDirectionID.Right : PathDirectionID.Left;
-			//}
-			//else {
-			//	directionID = yDiff > 0 ? PathDirectionID.Down : PathDirectionID.Up;
-			//}
+			Main.LocalPlayer.GetDirectionID(i, j, out short directionID);
 
 			SetTileDirection(tile, directionID);
-		}
-		private static void GetDirectionID(int tileX, int tileY, out short directionID) {
-			Point playerCenterTile = Main.LocalPlayer.Center.ToTileCoordinates();
-			int xDiff = tileX - playerCenterTile.X;
-			int yDiff = tileY - playerCenterTile.Y;
-			if (Math.Abs(xDiff) >= Math.Abs(yDiff)) {
-				directionID = xDiff > 0 ? (short)PathDirectionID.Right : (short)PathDirectionID.Left;
-			}
-			else {
-				directionID = yDiff > 0 ? (short)PathDirectionID.Down : (short)PathDirectionID.Up;
-			}
+			Entity.Hook_AfterPlacement(i, j, tile.TileType, 0, 0, 0);
 		}
 		private static int GetDirectionID(int x, int y) => Main.tile[x, y].TileFrameX / 18;
 		public override bool Slope(int i, int j) {
 			Tile tile = Main.tile[i, j];
-			short directionID = (short)((tile.TileFrameX / 18 + 1) % 4);
+			short directionID = (short)((tile.TileFrameX / 18 + 3) % 4);
 			SetTileDirection(tile, directionID);
 
 			SoundEngine.PlaySound(SoundID.Dig, new Point(i, j).ToWorldCoordinates());
@@ -261,6 +247,9 @@ namespace EngagedSkyblock.Tiles {
 				blockBreakerX = i;
 				blockBreakerY = j;
 				WorldGen.KillTile(x, y);
+				if (Main.netMode != NetmodeID.SinglePlayer)
+					NetMessage.SendData(MessageID.TileManipulation, -1, -1, null, 0, x, y);
+
 				breakingTileX = -1;
 				breakingTileY = -1;
 			}
@@ -270,7 +259,7 @@ namespace EngagedSkyblock.Tiles {
 
 		}
 		public override void KillTile(int i, int j, ref bool fail, ref bool effectOnly, ref bool noItem) {
-			Entity.Kill (i, j);
+			Entity.Kill(i, j);
 		}
 	}
 }
