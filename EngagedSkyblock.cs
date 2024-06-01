@@ -1,5 +1,6 @@
 using androLib.Localization;
 using EngagedSkyblock.Common.Globals;
+using EngagedSkyblock.Content.Liquids;
 using EngagedSkyblock.Items;
 using EngagedSkyblock.Tiles.TileEntities;
 using EngagedSkyblock.Weather;
@@ -13,7 +14,7 @@ using Terraria.ModLoader;
 
 namespace EngagedSkyblock
 {
-	public class EngagedSkyblock : Mod {
+    public class EngagedSkyblock : Mod {
 		public static EngagedSkyblock Instance;
 		public const string ModName = "EngagedSkyblock";
 		private static List<Hook> hooks = new();
@@ -22,15 +23,16 @@ namespace EngagedSkyblock
 			hooks.Add(new(ES_WorldGen.ModLoaderModSystemModifyWorldGenTasks, ES_WorldGen.ModSystem_ModifyWorldGenTasks_Detour));
 			hooks.Add(new(ES_GlobalTile.TileLoaderDrop, ES_GlobalTile.TileLoader_Drop_Detour));
 			hooks.Add(new(ES_WorldGen.ModLoaderModSystemPostWorldGen, ES_WorldGen.ModSystem_PostWorldGen_Detour));
+			hooks.Add(new(LeafBlock.PlantLoaderShakeTree, LeafBlock.PlantLoaderShakeTreeDelegate));
 
 			foreach (Hook hook in hooks) {
 				hook.Apply();
 			}
 
 			ES_WorldGen.Load();
-			ES_Liquid.Load();
 			ES_Weather.Load();
 			Tiles.RainTotem.Load();
+			AutoFisher.Load();
 
 			ES_LocalizationData.RegisterSDataPackage();
 		}
@@ -39,6 +41,8 @@ namespace EngagedSkyblock
 			SendWorldSeedToClient,
 			HitTile,
 			ChestIndicatorInfo,
+			AutoFisherUseItem,
+			AutoFisherItemSync,
 		}
 		public override void HandlePacket(BinaryReader reader, int whoAmI) {
 			if (Main.netMode == NetmodeID.Server) {
@@ -50,6 +54,7 @@ namespace EngagedSkyblock
 						modPacket.Write((byte)ModPacketID.SendWorldSeedToClient);
 						modPacket.Write(Main.ActiveWorldFileData.SeedText);
 						modPacket.Send(client);
+						AutoFisherTE.RequestAllTEsToClient(client);
 						break;
 					case ModPacketID.HitTile:
 						int x = reader.ReadInt32();
@@ -57,8 +62,11 @@ namespace EngagedSkyblock
 						int playerWhoAmI = reader.ReadInt32();
 						ES_GlobalTile.HitTile(x, y, playerWhoAmI);
 						break;
+					case ModPacketID.AutoFisherItemSync:
+						AutoFisherTE.ReceiveItem(reader, whoAmI);
+						break;
 					default:
-						throw new Exception($"Recieved packet ID: {packetID}.  Not recognized.");
+						throw new Exception($"Received packet ID: {packetID}.  Not recognized.");
 				}
 			}
 			else if (Main.netMode == NetmodeID.MultiplayerClient) {
@@ -70,6 +78,12 @@ namespace EngagedSkyblock
 						break;
 					case ModPacketID.ChestIndicatorInfo:
 						ChestIndicatorInfo.Read(reader);
+						break;
+					case ModPacketID.AutoFisherUseItem:
+						AutoFisherTE.ReadAutoFisherUseItem(reader);
+						break;
+					case ModPacketID.AutoFisherItemSync:
+						AutoFisherTE.ReceiveItem(reader);
 						break;
 					default:
 						throw new Exception($"Recieved packet ID: {packetID}.  Not recognized.");

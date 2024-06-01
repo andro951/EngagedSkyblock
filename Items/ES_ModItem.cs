@@ -9,6 +9,7 @@ using Terraria.ModLoader;
 
 namespace EngagedSkyblock.Items {
 	public abstract class ES_ModItem : AndroModItem {
+		public override string Texture => (GetType().Namespace + ".Sprites." + Name).Replace('.', '/');
 		protected override Action<ModItem, string, string> AddLocalizationTooltipFunc => ES_LocalizationDataStaticMethods.AddLocalizationTooltip;
 	}
 }

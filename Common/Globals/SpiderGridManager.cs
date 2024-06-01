@@ -204,6 +204,9 @@ namespace EngagedSkyblock.Common.Globals {
 
 		PlaceWall:
 			WorldGen.PlaceWall(placeWallX, placeWallY, WallID.SpiderUnsafe, true);
+			if (Main.netMode == NetmodeID.Server && Main.tile[placeWallX, placeWallY].WallType == WallID.SpiderUnsafe)
+				NetMessage.SendData(MessageID.TileManipulation, -1, -1, null, 3, placeWallX, placeWallY, WallID.SpiderUnsafe);
+
 			AllConnectedPathFinder.FindAll(placeWallX, placeWallY, CheckPathShouldContinue, 10, AllConnectedPathFinder.PathCheckDefaultID, Main.maxTilesX - 1, Main.maxTilesY - 1, distance: value);
 
 			return true;

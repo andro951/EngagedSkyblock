@@ -30,6 +30,5 @@ namespace EngagedSkyblock.Items {
 			recipe.Register();
 		}
 		public abstract void ModifyRecipe(Recipe recipe);
-		public override string Texture => (GetType().Namespace + ".Sprites." + Name).Replace('.', '/');
 	}
 }

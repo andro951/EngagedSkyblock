@@ -28,11 +28,11 @@ namespace EngagedSkyblock.Items {
 			Item.useAnimation = 15;
 			Item.useTurn = true;
 			Item.autoReuse = true;
+			Item.consumable = true;
 		}
 		public override void AddRecipes() {
 			CreateRecipe().AddTile(TileID.Sawmill).AddRecipeGroup(RecipeGroupID.Wood, wood).AddRecipeGroup($"{AndroMod.ModName}:{AndroModSystem.AnyCommonGem}", gems).Register();
 		}
-		public override string Texture => (GetType().Namespace + ".Sprites." + Name).Replace('.', '/');
 		public override string LocalizationTooltip =>
 			$"Provides a {rainChance.PercentString()} chance to rain every day when placed.\n" +
 			$"Rain in a snow biome or in high altitudes causes snow.\n" +

@@ -1,11 +1,17 @@
 ﻿using androLib.Common.Utility;
 using EngagedSkyblock.Common.Globals;
+using EngagedSkyblock.Content;
 using EngagedSkyblock.Content.Dusts;
 using EngagedSkyblock.Items;
+using EngagedSkyblock.Tiles.TileEntities;
 using EngagedSkyblock.Weather;
+using KokoLib;
 using Microsoft.VisualBasic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MonoMod.RuntimeDetour;
+using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,8 +20,15 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Terraria;
+using Terraria.Audio;
+using Terraria.DataStructures;
+using Terraria.GameContent;
+using Terraria.GameContent.Tile_Entities;
 using Terraria.ID;
+using Terraria.Localization;
 using Terraria.ModLoader;
+using Terraria.ModLoader.IO;
+using Terraria.ObjectData;
 using Terraria.UI;
 
 namespace EngagedSkyblock {
@@ -62,16 +75,23 @@ namespace EngagedSkyblock {
 					//Main.tile[cursor.X, cursor.Y].TileFrameX = 54 * 2;
 					//Main.tile[cursor.X, cursor.Y].TileFrameY = 36 * 7;
 				}
+
+				if (Keys.NumPad4.Clicked()) {
+					
+				}
 			}
+
+			if (Main.netMode == NetmodeID.MultiplayerClient && Main.myPlayer == Player.whoAmI)
+				DoPlayerMovementTileGrowth(true);
 		}
 
-		public void DoPlayerMovementTileGrowth() {
+		public void DoPlayerMovementTileGrowth(bool dustOnly = false) {
 			if (!ES_WorldGen.SkyblockWorld)
 				return;
 
 			float speed = Player.velocity.Length();
 			if (speed > speedThreshold)
-				UpdateWorldTiles();
+				UpdateWorldTiles(dustOnly);
 		}
 		private static readonly MethodInfo updateWorld_OvergroundTileMethodInfo = typeof(WorldGen).GetMethod("UpdateWorld_OvergroundTile", BindingFlags.NonPublic | BindingFlags.Static);
 		private delegate void UpdateWorld_OvergroundTileDelegate(int i, int j, bool checkNPCSpawns, int wallDist);
@@ -80,7 +100,7 @@ namespace EngagedSkyblock {
 		private static readonly MethodInfo updateWorld_UndergroundTileMethodInfo = typeof(WorldGen).GetMethod("UpdateWorld_UndergroundTile", BindingFlags.NonPublic | BindingFlags.Static);
 		private delegate void UpdateWorld_UndergroundTileDelegate(int i, int j, bool checkNPCSpawns, int wallDist);
 		UpdateWorld_UndergroundTileDelegate UpdateWorld_UndergroundTile = (UpdateWorld_UndergroundTileDelegate)Delegate.CreateDelegate(typeof(UpdateWorld_UndergroundTileDelegate), null, updateWorld_UndergroundTileMethodInfo);
-		private void UpdateWorldTiles() {
+		private void UpdateWorldTiles(bool dustOnly = false) {
 			double worldUpdateRate = WorldGen.GetWorldUpdateRate();
 			if (worldUpdateRate == 0)
 				return;
@@ -98,6 +118,9 @@ namespace EngagedSkyblock {
 			double pointsChance = tilesToUpdate > 0 ? (double)surfaceBlocks.Count / tilesCount : 0d;
 			for (int j = 0; j < tilesToUpdate; j++) {
 				if (Main.rand.Next(5) == 0) {
+					if (dustOnly)
+						continue;
+
 					GetRandomPointToUpdate(out int x, out int y);
 					if (Main.rand.Next(num6 * 100) == 0)
 						WorldGen.PlantAlch();
@@ -119,14 +142,18 @@ namespace EngagedSkyblock {
 		public static void GrowDust(Point point) {
 			Dust.NewDust(point.ToWorldCoordinates(Main.rand.NextFloat(8f), Main.rand.NextFloat(8f)), 1, 1, ModContent.DustType<GrowthDust>());
 		}
-		private static bool BlockCanGrow(int x, int y) {
+		private static bool BlockCanGrow(int x, int y) {//TODO: not running on client.  Needs dust
 			Tile tile = Main.tile[x, y];
+			if (!tile.HasTile)
+				return false;
+
 			int tileType = tile.TileType;
 			bool canGrow = tile.HasTile && y != 0 && !Main.tile[x, y - 1].HasTile && BlocksThatCanGrow.Contains(tileType)
 			//|| WallsThatCanGrow.Contains(tile.WallType)
 			|| tile.WallType == WallID.SpiderUnsafe && NearbyTile(x, y, 4, (i, j) => WorldGen.SolidTile(i, j))
 			|| ES_GlobalTile.MudThatCanConvertToChlorophyte(x, y, tileType)
-			|| ES_GlobalTile.MudThatCanConvertToClay(x, y, tileType)
+			|| ES_GlobalTile.MudThatCanConvertToDirt(x, y, tileType)
+			|| ES_GlobalTile.DirtThatCanConvertToMud(x, y, tileType)
 			|| ES_GlobalTile.SandThatCanHarden(x, y, tileType, out _)
 			|| ES_GlobalTile.OrganicCanBecomeFossil(x, y, tileType)
 			;
@@ -213,7 +240,6 @@ namespace EngagedSkyblock {
 		//	WallID.CrimsonGrassUnsafe,
 		//	WallID.CrimstoneUnsafe,
 		//};
-
 		public static List<Point> GetTilesOfType(Point center, float radius, Func<int, int, bool> condition = null) {
 			List<Point> tiles = new();
 			for (int x = center.X - (int)radius; x <= center.X + (int)radius; x++) {
@@ -244,6 +270,117 @@ namespace EngagedSkyblock {
 		public override void OnEnterWorld() {
 			if (Main.netMode == NetmodeID.MultiplayerClient)
 				ES_WorldGen.RequestSeedFromServer();
+
+			if (ES_WorldGen.SkyblockWorld) {
+				SpawnManager.PostUpdateActions += CheckSafeSpawn;
+				SpawnManager.PostUpdateActionsTimerReset = 1;
+			}
 		}
+
+		#region SafeSpawn
+
+		private static bool CanStandOnTile(int x, int y) => WorldGen.SolidTile(x, y) || TileID.Sets.Platforms[Framing.GetTileSafely(x, y).TileType];
+		private static bool CanStandOnTileCheckSpace(ref Point16 inPoint) {
+			int x = inPoint.X;
+			int y = inPoint.Y;
+			if (CanStandOnTile(x, y)) {
+				//Look up
+				while (y > 3) {
+					if (SpaceEmpty(x, y)) {
+						if (CanStandOnTile(x, y)) {
+							inPoint = new(x, y);
+							return true;
+						}
+					}
+
+					y--;
+				}
+			}
+			else {
+				//Look down
+				while (y < Main.maxTilesY) {
+					if (CanStandOnTile(x, y)) {
+						if (SpaceEmpty(x, y)) {
+							inPoint = new(x, y);
+							return true;
+						}
+					}
+
+					y++;
+				}
+
+				//No tiles below, now look above
+				while (y > 3) {
+					if (CanStandOnTile(x, y)) {
+						if (SpaceEmpty(x, y)) {
+							inPoint = new(x, y);
+							return true;
+						}
+					}
+
+					y--;
+				}
+			}
+
+			return false;
+		}
+		public static bool ValidSpawnPoint(Point16 spawnPoint) => CanStandOnTile(spawnPoint.X, spawnPoint.Y) && SpaceEmpty(spawnPoint.X, spawnPoint.Y);
+		private static bool SpaceEmpty(int floorX, int floorY) {
+			int xStart = floorX;
+			int xEnd = floorX + 1;
+			if (xStart < 0 || xEnd >= Main.maxTilesX)
+				return false;
+
+			int yStart = floorY - 1;
+			int yEnd = floorY - 3;
+			if (yEnd <= 0 || yStart >= Main.maxTilesY)
+				return false;
+
+			for (int x = xStart; x <= xEnd; x++) {
+				for (int y = yStart; y >= yEnd; y--) {
+					Tile tile = Main.tile[x, y];
+					int tileType = tile.TileType;
+					if (tile.HasTile && !tile.IsActuated && Main.tileSolid[tileType] && !Main.tileSolidTop[tileType] || tile.LiquidAmount > 0)
+						return false;
+				}
+			}
+
+			return true;
+		}
+		private static Vector2 FloorTileToSpawnPosition(Point16 floorPoint) => new Vector2(floorPoint.X * 16, floorPoint.Y * 16 - 42);
+		private void CheckSafeSpawn() {
+			Point16 position = Player.position.ToTileCoordinates16();
+			Point16 checkFloorPosition = position;
+			if (CanStandOnTileCheckSpace(ref checkFloorPosition)) {
+				if (checkFloorPosition != position) {
+					goto MovePlayer;
+				}
+				else {
+					return;
+				}
+			}
+
+			checkFloorPosition = new Point16(Main.spawnTileX, Main.spawnTileY);
+			if (CanStandOnTileCheckSpace(ref checkFloorPosition)) {
+				goto MovePlayer;
+			}
+
+			//TODO: look more for a safe standing spot.
+
+			return;
+
+		MovePlayer:
+			Player.position = FloorTileToSpawnPosition(checkFloorPosition);
+		}
+
+		#endregion
+
+		public override void OnRespawn() {
+			//CheckSafeSpawn();
+		}
+	}
+
+	public static class ES_ModPlayerStaticMethods {
+
 	}
 }

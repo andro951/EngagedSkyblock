@@ -18,9 +18,15 @@ using Terraria.GameContent;
 using EngagedSkyblock.Common.Globals;
 using EngagedSkyblock.Weather;
 using Terraria.IO;
+using EngagedSkyblock.Content;
+using EngagedSkyblock.Content.Liquids;
+using EngagedSkyblock.Tiles;
+using EngagedSkyblock.Items;
+using static EngagedSkyblock.Tiles.ExtractionItem;
 
-namespace EngagedSkyblock {
-	public class ES_ModSystem : ModSystem {
+namespace EngagedSkyblock
+{
+    public class ES_ModSystem : ModSystem {
 		public override void OnWorldLoad() {
 			ES_WorldGen.OnWorldLoad();//Should always be first here.  get's world seed
 		}
@@ -37,6 +43,10 @@ namespace EngagedSkyblock {
 			}
 		}
 		private static SortedDictionary<int, SortedSet<int>> allItemDrops = null;
+		public override void PostSetupContent() {
+			ExtractionItem.PostSetupContent();
+			ExtractTypeSet.PostSetupContent();
+		}
 		private static void SetupAllItemDrops() {
 			allItemDrops = new();
 			foreach (KeyValuePair<int, NPC> npcPair in ContentSamples.NpcsByNetId) {
@@ -118,19 +128,41 @@ namespace EngagedSkyblock {
 			}
 			*/
 
-			Recipe.Create(ItemID.MudBlock, 2).AddTile(TileID.Sinks).AddIngredient(ItemID.DirtBlock, 1).AddIngredient(ItemID.Hay, 1).Register();
+			//Recipe.Create(ItemID.MudBlock, 2).AddTile(TileID.Sinks).AddIngredient(ItemID.DirtBlock, 1).AddIngredient(ItemID.Hay, 1).Register();
 			Recipe.Create(ItemID.SiltBlock, 2).AddTile(TileID.Furnaces).AddIngredient(ItemID.ClayBlock, 1).AddIngredient(ItemID.SandBlock, 1).Register();
 			Recipe.Create(ItemID.SnowBlock).AddIngredient(ItemID.Snowball, 15).Register();
+			Recipe.Create(ItemID.DirtBlock).AddIngredient(ModContent.ItemType<LeafBlock>()).AddIngredient(ItemID.SiltBlock).Register();
+			Recipe.Create(ItemID.LihzahrdBrick, 50).AddTile(TileID.Hellforge).AddIngredient(ItemID.ClayBlock, 40).AddRecipeGroup($"{AndroMod.ModName}:{AndroModSystem.GoldOrPlatinumBar}", 10).AddCondition(Condition.DownedPlantera).Register();
 			(int, int[])[] allDyes = new (int, int[])[] {
-				(ItemID.AncientBlueDungeonBrick, new int[] { ItemID.CyanDye, ItemID.SkyBlueDye, ItemID.BlueDye, ItemID.BlackDye }),
-				(ItemID.AncientGreenDungeonBrick, new int[] { ItemID.LimeDye, ItemID.GreenDye, ItemID.YellowDye, ItemID.TealDye }),
-				(ItemID.AncientPinkDungeonBrick, new int[] { ItemID.PinkDye, ItemID.RedDye, ItemID.VioletDye, ItemID.OrangeDye, ItemID.PurpleDye }),
+				(ItemID.BlueBrick, new int[] { ItemID.CyanDye, ItemID.SkyBlueDye, ItemID.BlueDye, ItemID.BlackDye }),
+				(ItemID.GreenBrick, new int[] { ItemID.LimeDye, ItemID.GreenDye, ItemID.YellowDye, ItemID.TealDye }),
+				(ItemID.PinkBrick, new int[] { ItemID.PinkDye, ItemID.RedDye, ItemID.VioletDye, ItemID.OrangeDye, ItemID.PurpleDye }),
 			};
 
 			foreach ((int brickType, int[] dyes) in allDyes) {
 				foreach (int dye in dyes) {
-					Recipe.Create(brickType, 25).AddIngredient(ItemID.StoneBlock, 20).AddIngredient(ItemID.Obsidian, 5).AddIngredient(dye).Register();
+					Recipe.Create(brickType, 50).AddIngredient(ItemID.StoneBlock, 40).AddIngredient(ItemID.Obsidian, 10).AddIngredient(dye).Register();
 				}
+			}
+
+			(int brick, int wall, int tiledWall, int slabWall, int wallSafe, int tiledWallSafe, int slabWallSafe)[] brickSets = new (int brick, int wall, int tiledWall, int slabWall, int wallSafe, int tiledWallSafe, int slabWallSafe)[] {
+				(ItemID.BlueBrick, ItemID.BlueBrickWallUnsafe, ItemID.BlueTiledWallUnsafe, ItemID.BlueSlabWallUnsafe, ItemID.BlueBrickWall, ItemID.BlueTiledWall, ItemID.BlueSlabWall),
+				(ItemID.GreenBrick, ItemID.GreenBrickWallUnsafe, ItemID.GreenTiledWallUnsafe, ItemID.GreenSlabWallUnsafe, ItemID.GreenBrickWall, ItemID.GreenTiledWall, ItemID.GreenSlabWall),
+				(ItemID.PinkBrick, ItemID.PinkBrickWallUnsafe, ItemID.PinkTiledWallUnsafe, ItemID.PinkSlabWallUnsafe, ItemID.PinkBrickWall, ItemID.PinkTiledWall, ItemID.PinkSlabWall)
+			};
+
+			foreach (var brickSet in brickSets) {
+				Recipe.Create(brickSet.wall, 4).AddIngredient(brickSet.brick).AddTile(TileID.HeavyWorkBench).AddCondition(Condition.DownedSkeletron).DisableDecraft().Register();
+				Recipe.Create(brickSet.tiledWall, 4).AddIngredient(brickSet.brick).AddTile(TileID.HeavyWorkBench).AddCondition(Condition.DownedSkeletron).DisableDecraft().Register();
+				Recipe.Create(brickSet.slabWall, 4).AddIngredient(brickSet.brick).AddTile(TileID.HeavyWorkBench).AddCondition(Condition.DownedSkeletron).DisableDecraft().Register();
+
+				Recipe.Create(brickSet.brick).AddIngredient(brickSet.wall, 4).AddTile(TileID.HeavyWorkBench).AddCondition(Condition.DownedSkeletron).DisableDecraft().Register();
+				Recipe.Create(brickSet.brick).AddIngredient(brickSet.tiledWall, 4).AddTile(TileID.HeavyWorkBench).AddCondition(Condition.DownedSkeletron).DisableDecraft().Register();
+				Recipe.Create(brickSet.brick).AddIngredient(brickSet.slabWall, 4).AddTile(TileID.HeavyWorkBench).AddCondition(Condition.DownedSkeletron).DisableDecraft().Register();
+
+				Recipe.Create(brickSet.wall).AddIngredient(brickSet.wallSafe).AddTile(TileID.HeavyWorkBench).AddCondition(Condition.DownedSkeletron).DisableDecraft().Register();
+				Recipe.Create(brickSet.tiledWall).AddIngredient(brickSet.tiledWallSafe).AddTile(TileID.HeavyWorkBench).AddCondition(Condition.DownedSkeletron).DisableDecraft().Register();
+				Recipe.Create(brickSet.slabWall).AddIngredient(brickSet.slabWallSafe).AddTile(TileID.HeavyWorkBench).AddCondition(Condition.DownedSkeletron).DisableDecraft().Register();
 			}
 
 			int[] templeTraps = new int[] {
@@ -235,6 +267,16 @@ namespace EngagedSkyblock {
 			ES_Liquid.Update();
 			ES_Weather.Update();
 			ES_GlobalWall.Update();
+			SpawnManager.Update();
+			AutoFisherTE.UpdateAll();
+		}
+		public override void Load() {
+			On_WorldFile.SaveWorld += On_WorldFile_SaveWorld;
+		}
+
+		private void On_WorldFile_SaveWorld(On_WorldFile.orig_SaveWorld orig) {
+			ES_Liquid.PreSaveWorld();
+			orig();
 		}
 	}
 }

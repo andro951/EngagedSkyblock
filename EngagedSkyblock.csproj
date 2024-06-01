@@ -8,15 +8,39 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Content\Dusts\GrowthDust.png" />
+    <None Remove="Content\GuideBook\Screenshots\Valid Dungeon.PNG" />
     <None Remove="Items\AutoExtractors\AutoExtractor.png" />
     <None Remove="Items\AutoExtractors\AutoExtractorTier2.png" />
     <None Remove="Items\AutoExtractors\AutoExtractorTier3.png" />
     <None Remove="Items\AutoExtractors\AutoExtractorTier4.png" />
     <None Remove="Items\AutoExtractors\AutoExtractorTier5.png" />
+    <None Remove="Items\Sprites\AdamantiteBlockPlacer.png" />
+    <None Remove="Items\Sprites\ChlorophyteBlockPlacer.png" />
+    <None Remove="Items\Sprites\CobaltBlockPlacer.png" />
+    <None Remove="Items\Sprites\CopperBlockPlacer.png" />
     <None Remove="Items\Sprites\CrimsonAltar.png" />
+    <None Remove="Items\Sprites\CrimtaneBlockPlacer.png" />
     <None Remove="Items\Sprites\DemonAltar.png" />
+    <None Remove="Items\Sprites\DemoniteBlockPlacer.png" />
+    <None Remove="Items\Sprites\GoldBlockPlacer.png" />
+    <None Remove="Items\Sprites\HallowedBlockPlacer.png" />
+    <None Remove="Items\Sprites\HellstoneBlockPlacer.png" />
+    <None Remove="Items\Sprites\IronBlockPlacer.png" />
+    <None Remove="Items\Sprites\LeadBlockPlacer.png" />
+    <None Remove="Items\Sprites\LeafBlock.png" />
+    <None Remove="Items\Sprites\LuminiteBlockPlacer.png" />
+    <None Remove="Items\Sprites\MeteoriteBlockPlacer.png" />
+    <None Remove="Items\Sprites\MythrilBlockPlacer.png" />
+    <None Remove="Items\Sprites\OrichalcumBlockPlacer.png" />
+    <None Remove="Items\Sprites\PalladiumBlockPlacer.png" />
+    <None Remove="Items\Sprites\PlatinumBlockPlacer.png" />
     <None Remove="Items\Sprites\RainTotem.png" />
+    <None Remove="Items\Sprites\SilverBlockPlacer.png" />
+    <None Remove="Items\Sprites\TinBlockPlacer.png" />
+    <None Remove="Items\Sprites\TitaniumBlockPlacer.png" />
+    <None Remove="Items\Sprites\TungstenBlockPlacer.png" />
     <None Remove="Items\Sprites\WoodBlockBreaker.png" />
+    <None Remove="Items\Sprites\WoodBlockPlacer.png" />
     <None Remove="Items\Sprites\WoodChips.png" />
     <None Remove="Localization\de-DE.hjson" />
     <None Remove="Localization\en-US.hjson" />
@@ -34,9 +58,31 @@
     <None Remove="Tiles\AutoExtractors\AutoExtractorTier5Tile.png" />
     <None Remove="Tiles\AutoExtractors\ExtractinatorDust.png" />
     <None Remove="Tiles\AutoExtractors\ExtractinatorIndicatorDot.png" />
+    <None Remove="Tiles\Sprites\AdamantiteBlockPlacer.png" />
+    <None Remove="Tiles\Sprites\ChlorophyteBlockPlacer.png" />
+    <None Remove="Tiles\Sprites\CobaltBlockPlacer.png" />
+    <None Remove="Tiles\Sprites\CopperBlockPlacer.png" />
     <None Remove="Tiles\Sprites\CrimsonAltar.png" />
+    <None Remove="Tiles\Sprites\CrimtaneBlockPlacer.png" />
     <None Remove="Tiles\Sprites\DemonAltar.png" />
+    <None Remove="Tiles\Sprites\DemoniteBlockPlacer.png" />
+    <None Remove="Tiles\Sprites\GoldBlockPlacer.png" />
+    <None Remove="Tiles\Sprites\HallowedBlockPlacer.png" />
+    <None Remove="Tiles\Sprites\HellstoneBlockPlacer.png" />
+    <None Remove="Tiles\Sprites\IronBlockPlacer.png" />
+    <None Remove="Tiles\Sprites\LeadBlockPlacer.png" />
+    <None Remove="Tiles\Sprites\LuminiteBlockPlacer.png" />
+    <None Remove="Tiles\Sprites\MeteoriteBlockPlacer.png" />
+    <None Remove="Tiles\Sprites\MythrilBlockPlacer.png" />
+    <None Remove="Tiles\Sprites\OrichalcumBlockPlacer.png" />
+    <None Remove="Tiles\Sprites\PalladiumBlockPlacer.png" />
+    <None Remove="Tiles\Sprites\PlatinumBlockPlacer.png" />
+    <None Remove="Tiles\Sprites\SilverBlockPlacer.png" />
+    <None Remove="Tiles\Sprites\TinBlockPlacer.png" />
+    <None Remove="Tiles\Sprites\TitaniumBlockPlacer.png" />
+    <None Remove="Tiles\Sprites\TungstenBlockPlacer.png" />
     <None Remove="Tiles\Sprites\WoodBlockBreaker.png" />
+    <None Remove="Tiles\Sprites\WoodBlockPlacer.png" />
     <None Remove="Weather\SnowFlake.png" />
   </ItemGroup>
   <ItemGroup>
@@ -49,6 +95,9 @@
   <ItemGroup>
     <Reference Include="KokoLib">
       <HintPath>..\Mods\lib\KokoLib.dll</HintPath>
+    </Reference>
+    <Reference Include="LiquidsLib">
+      <HintPath>..\LiquidsLib\bin\Debug\net8.0\LiquidsLib.dll</HintPath>
     </Reference>
     <Reference Include="TileFunctionLibrary">
       <HintPath>..\Mods\lib\TileFunctionLibrary.dll</HintPath>

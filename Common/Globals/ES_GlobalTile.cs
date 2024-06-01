@@ -1,6 +1,7 @@
 ﻿using androLib.Common.Utility;
 using androLib.Common.Utility.Compairers;
 using androLib.Common.Utility.PathFinders;
+using EngagedSkyblock.Content.Liquids;
 using EngagedSkyblock.Weather;
 using Microsoft.Xna.Framework;
 using MonoMod.Cil;
@@ -17,8 +18,9 @@ using Terraria.ModLoader;
 using static EngagedSkyblock.Common.Globals.ES_GlobalTile;
 using static EngagedSkyblock.EngagedSkyblock;
 
-namespace EngagedSkyblock.Common.Globals {
-	public class ES_GlobalTile : GlobalTile {
+namespace EngagedSkyblock.Common.Globals
+{
+    public class ES_GlobalTile : GlobalTile {
 		public override void Load() {
 			On_Player.ItemCheck_UseMiningTools_ActuallyUseMiningTool += On_Player_ItemCheck_UseMiningTools_ActuallyUseMiningTool;
 			IL_WorldGen.hardUpdateWorld += IL_WorldGen_hardUpdateWorld;
@@ -99,19 +101,28 @@ namespace EngagedSkyblock.Common.Globals {
 			if (!ES_WorldGen.SkyblockWorld)
 				return;
 
-			if (CheckForTileUpdates(i, j, type))
-				return;
+			CheckForTileUpdates(i, j, type);
+
+			ES_WorldGen.TileRandomUpdate(i, j, type);
 		}
 		private static bool CheckForTileUpdates(int i, int j, int type) {
+			if (!Main.tile[i, j].HasTile)
+				return false;
+
 			int tileToPlace = defaultTileToPlace;
 			if (MudThatCanConvertToChlorophyte(i, j, type)) {
 				tileToPlace = TileID.Chlorophyte;
 				goto PlaceTile;
 			}
 
-			if (MudThatCanConvertToClay(i, j, type)) {
-				tileToPlace = TileID.ClayBlock;
-				goto PlaceTile;
+			if (MudThatCanConvertToDirt(i, j, type)) {
+				if (mudToDirt.TryGetValue(type, out tileToPlace))
+					goto PlaceTile;
+			}
+
+			if (DirtThatCanConvertToMud(i, j, type)) {
+				if (dirtToMud.TryGetValue(type, out tileToPlace))
+					goto PlaceTile;
 			}
 
 			if (SandThatCanHarden(i, j, type, out int hardSandType)) {
@@ -143,10 +154,35 @@ namespace EngagedSkyblock.Common.Globals {
 		}
 
 		public static void PlaceTile(int i, int j, int tileToPlace, bool growDust = true) {
-			WorldGen.PlaceTile(i, j, tileToPlace, true, true);
+			if (!WorldGen.PlaceTile(i, j, tileToPlace, true, true)) {
+				Tile tile = Main.tile[i, j];
+				switch (tileToPlace) {
+					case TileID.Grass:
+					case TileID.CorruptGrass:
+					case TileID.CrimsonGrass:
+					case TileID.HallowedGrass:
+						tile.HasTile = true;
+						tile.TileType = TileID.Dirt;
+						break;
+					case TileID.JungleGrass:
+					case TileID.CorruptJungleGrass:
+					case TileID.CrimsonJungleGrass:
+					case TileID.MushroomGrass:
+						tile.HasTile = true;
+						tile.TileType = TileID.Mud;
+						break;
+					case TileID.AshGrass:
+						tile.HasTile = true;
+						tile.TileType = TileID.Ash;
+						break;
+				}
+
+				WorldGen.PlaceTile(i, j, tileToPlace, true, true);
+			}
+
 			if (growDust)
 				ES_ModPlayer.GrowDust(new Point(i, j));
-
+			
 			WorldGen.SquareTileFrame(i, j);
 			if (Main.netMode == NetmodeID.Server)
 				NetMessage.SendTileSquare(-1, i - 1, j - 1, 3);
@@ -261,7 +297,6 @@ namespace EngagedSkyblock.Common.Globals {
 					break;
 				case TileID.LivingWood:
 				case TileID.LivingMahogany:
-				case TileID.LeafBlock:
 				case TileID.LivingMahoganyLeaves:
 				case TileID.Hive:
 				case TileID.HoneyBlock:
@@ -281,6 +316,7 @@ namespace EngagedSkyblock.Common.Globals {
 				case TileID.FrozenSlimeBlock:
 				case TileID.PinkSlimeBlock:
 				case TileID.BubblegumBlock:
+				case TileID.LeafBlock:
 					chanceDenom = 200;
 					break;
 				case TileID.WoodBlock:
@@ -453,7 +489,7 @@ namespace EngagedSkyblock.Common.Globals {
 
 		#endregion
 
-		#region Mud Conversion
+		#region Mud and Dirt Conversion
 
 		public static bool MudThatCanConvertToChlorophyte(int i, int j, int type) {
 			if (!Main.hardMode)
@@ -508,38 +544,74 @@ namespace EngagedSkyblock.Common.Globals {
 			});
 		}
 
-		public static bool MudThatCanConvertToClay(int i, int j, int type) {
+		private const int waterRadius = 10;
+		public static bool MudThatCanConvertToDirt(int i, int j, int type) {
+			if (!mudToDirt.ContainsKey(type))
+				return false;
+
 			if (Main.raining)
 				return false;
 
-			if (type != TileID.Mud)
+			if (TouchingMudWaterSource(i, j))
 				return false;
 
-			if (TouchingAir(i, j)) {
-				int radius = 10;
-				return !HasMudPathToWater(i, j, radius);
-			}
+			if (SurroundedBy(i, j, CountsAsMudPath))
+				return false;
 
-			return false;
+			return !HasMudPathToWater(i, j, waterRadius);
 		}
 		private static SortedSet<int> mudPathAllowedTiles = new() {
 			TileID.Mud,
 			TileID.JungleGrass,
-			TileID.Grass,
-			TileID.Dirt
+			TileID.CorruptJungleGrass,
+			TileID.CrimsonJungleGrass,
+			TileID.MushroomGrass
+		};
+		private static SortedDictionary<int, int> dirtToMud = new() {
+			{ TileID.Dirt, TileID.Mud },
+			{ TileID.Grass, TileID.JungleGrass },
+			{ TileID.CorruptGrass, TileID.CorruptJungleGrass },
+			{ TileID.CrimsonGrass, TileID.CrimsonJungleGrass }
+		};
+		private static SortedDictionary<int, int> mudToDirt = new() {
+			{ TileID.Mud, TileID.Dirt },
+			{ TileID.JungleGrass, TileID.Grass },
+			{ TileID.CorruptJungleGrass, TileID.CorruptGrass },
+			{ TileID.CrimsonJungleGrass, TileID.CrimsonGrass },
+			{ TileID.MushroomGrass, TileID.Grass }
 		};
 		private static bool HasMudPathToWater(int i, int j, int radius) {
 			return MaxDistancePathFinder.HasPath(i, j, radius, CountsAsMudPath, CountsAsMudWaterSource, Main.maxTilesX, Main.maxTilesY);
 		}
-		private static bool CountsAsMudPath(int x, int y) {
-			Tile tile = Main.tile[x, y];
-			return tile.HasTile && mudPathAllowedTiles.Contains(tile.TileType);
-		}
+		private static bool CountsAsMudPath(int x, int y) => CountsAsMudPath(Main.tile[x, y]);
+		private static bool CountsAsMudPath(Tile tile) => tile.HasTile && mudPathAllowedTiles.Contains(tile.TileType);
 		private static bool CountsAsMudWaterSource(int x, int y) {
 			Tile tile = Main.tile[x, y];
-			return tile.LiquidAmount > 0 && tile.LiquidType == LiquidID.Water;
+			if (tile.LiquidAmount > 0 && tile.LiquidType == LiquidID.Water)
+				return true;
+
+			return Main.raining && tile.HasTile && CountsAsMudPath(tile) && DirectPathToSky(x, y);
 		}
-		private static bool TouchingAir(int i, int j) {
+		private static bool TouchingAir(int i, int j) => TouchingOtherBlock(i, j, (Tile tile) => !tile.HasTile);
+		private static bool TouchingWater(int i, int j) => TouchingBlock(i, j, (Tile tile) => tile.LiquidAmount > 0 && tile.LiquidType == LiquidID.Water);
+		private static bool TouchingMudWaterSource(int i, int j) => TouchingBlock(i, j, CountsAsMudWaterSource);
+		private static bool TouchingOtherBlock(int i, int j, int tileType) => TouchingOtherBlock(i, j, (Tile tile) => tile.HasTile && tile.TileType == tileType);
+		private static bool TouchingOtherBlock(int i, int j, Func<Tile, bool> condition) {
+			for (int k = 1; k < DirectionID.Count; k++) {
+				int x = i;
+				int y = j;
+				DirectionID.ApplyDirection(ref x, ref y, k);
+				if (!WorldGen.InWorld(x, y))
+					continue;
+
+				Tile tile = Main.tile[x, y];
+				if (condition(tile))
+					return true;
+			}
+
+			return false;
+		}
+		private static bool TouchingBlock(int i, int j, Func<Tile, bool> condition) {
 			for (int k = 0; k < DirectionID.Count; k++) {
 				int x = i;
 				int y = j;
@@ -548,9 +620,66 @@ namespace EngagedSkyblock.Common.Globals {
 					continue;
 
 				Tile tile = Main.tile[x, y];
-				if (!tile.HasTile)
+				if (condition(tile))
 					return true;
 			}
+
+			return false;
+		}
+		private static bool TouchingBlock(int i, int j, Func<int, int, bool> condition) {
+			for (int k = 0; k < DirectionID.Count; k++) {
+				int x = i;
+				int y = j;
+				DirectionID.ApplyDirection(ref x, ref y, k);
+				if (!WorldGen.InWorld(x, y))
+					continue;
+
+				if (condition(x, y))
+					return true;
+			}
+
+			return false;
+		}
+		private static bool SurroundedBy(int i, int j, Func<Tile, bool> condition) {
+			for (int k = 1; k < DirectionID.Count; k++) {
+				int x = i;
+				int y = j;
+				DirectionID.ApplyDirection(ref x, ref y, k);
+				if (!WorldGen.InWorld(x, y))
+					continue;
+
+				Tile tile = Main.tile[x, y];
+				if (!condition(tile))
+					return false;
+			}
+
+			return true;
+		}
+		private static bool DirectPathToSky(int i, int j) {
+			for (int y = j - 1; y >= 0; y--) {
+				Tile tile = Main.tile[i, y];
+				if (tile.HasUnactuatedTile && Main.tileSolid[tile.TileType] && !Main.tileSolidTop[tile.TileType]) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+		public static bool DirtThatCanConvertToMud(int i, int j, int type) {
+			if (!dirtToMud.ContainsKey(type))
+				return false;
+
+			if (SurroundedBy(i, j, CountsAsMudPath))
+				return true;
+
+			if (Main.raining && DirectPathToSky(i, j))
+				return true;
+
+			if (TouchingMudWaterSource(i, j))
+				return true;
+
+			if (HasMudPathToWater(i, j, waterRadius))
+				return true;
 
 			return false;
 		}

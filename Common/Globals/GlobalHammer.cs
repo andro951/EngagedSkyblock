@@ -51,8 +51,8 @@ namespace EngagedSkyblock.Common.Globals {
 
 			Item heldItem = player.HeldItem;
 			if (ItemLoader.CanUseItem(heldItem, player) && !player.mouseInterface && !heldItem.NullOrAir() && heldItem.TryGetGlobalItem(out GlobalHammer _)) {
-				Tile target = Main.tile[Player.tileTargetX, Player.tileTargetY];
 				player.controlUseItem = true;
+				Tile target = Main.tile[Player.tileTargetX, Player.tileTargetY];
 				if (target.HasTile && TileID.Sets.IsATreeTrunk[target.TileType]) {
 					int hammer = heldItem.hammer;
 					int axe = heldItem.axe;

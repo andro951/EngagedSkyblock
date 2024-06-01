@@ -12,6 +12,7 @@ using androLib;
 using ReLogic.Content;
 using Microsoft.Xna.Framework.Graphics;
 using EngagedSkyblock.Tiles.AutoExtractors;
+using System;
 
 namespace EngagedSkyblock.Tiles.TileEntities
 {
@@ -146,7 +147,8 @@ namespace EngagedSkyblock.Tiles.TileEntities
 
         private int GetChestID() => Chest.FindChest(Position.X, Position.Y);
         public override void OnNetPlace() => NetMessage.SendData(MessageID.TileEntitySharing, number: ID, number2: Position.X, number3: Position.Y);
-        private List<Chest> storageChests = new();
+        private List<int> storageChests = new();
+        private bool? junkInMyChest = null;
         public override void Update()
         {
             timer++;
@@ -169,7 +171,7 @@ namespace EngagedSkyblock.Tiles.TileEntities
                             Tile tile = Main.tile[chestX, chestY];
                             if (tile.HasTile && ValidTileTypeForStorageChest(tile.TileType))
                             {
-                                storageChests.Add(Main.chest[chestId]);
+                                storageChests.Add(chestId);
                                 break;
                             }
                         }
@@ -177,48 +179,55 @@ namespace EngagedSkyblock.Tiles.TileEntities
                 }
 
                 int chest = GetChestID();
-                if (chest != -1)
-                {
+                if (chest != -1 && (Main.netMode == NetmodeID.SinglePlayer || Chest.UsingChest(chest) == -1)) {
                     Chest extractorChest = Main.chest[chest];
                     Point extractorWordCoordinates = Position.ToWorldCoordinates().ToPoint();
                     int i = 0;
-                    for (int z = 0; z < ConsumeMultiplier; z++)
-                    {
-                        for (; i < extractorChest.item.Length; i++)
-                        {
-                            if (extractorChest.item[i].type != ItemID.None && ItemID.Sets.ExtractinatorMode[extractorChest.item[i].type] != -1)
-                            {
-                                if (extractorChest.item[i].stack > 0)
-                                    extractorChest.item[i].stack -= 1;
+                    for (int z = 0; z < ConsumeMultiplier; z++) {
+                        for (; i < extractorChest.item.Length; i++) {
+                            Item item = extractorChest.item[i];
+                            if (item.NullOrAir())
+                                continue;
 
-                                if (extractorChest.item[i].stack <= 0)
-                                    extractorChest.item[i].TurnToAir();
-
-                                ExtractionItem.AutoExtractinatorUse(ItemID.Sets.ExtractinatorMode[extractorChest.item[i].type], TileToBeValidOn, out int type, out int stack);
-
-                                TryDepositToChest(storageChests.Select(c => c.item), type, stack * LootMultiplier, extractorWordCoordinates);
-
-                                break;
+                            int extractinatorMode = ItemID.Sets.ExtractinatorMode[item.type];
+                            if (extractinatorMode == -1) {
+                                junkInMyChest = true;
+                                continue;
                             }
+
+							if (item.stack > 0)
+                                item.stack -= 1;
+
+                            if (item.stack <= 0)
+                                item.TurnToAir();
+
+                            ExtractionItem.AutoExtractinatorUse(extractinatorMode, TileToBeValidOn, out int type, out int stack);
+
+                            int newItemStack = stack * LootMultiplier;
+                            IEnumerable<Item[]> inventories = storageChests.Where(c => Main.chest[c] != null && (Main.netMode == NetmodeID.SinglePlayer || Chest.UsingChest(c) == -1)).Select(c => Main.chest[c].item);
+                            TryRemovingMyJunk(extractorChest.item, inventories);
+                            TryDepositToChest(inventories, type, ref newItemStack, extractorWordCoordinates);
+
+							break;
                         }
                     }
                 }
-                else
-                {
+                else {
                     $"Failed to find chest for the AutoExtractor at ({Position.X}, {Position.Y})".LogSimple();
                 }
 
                 timer = 0;
             }
 
-            if (Main.netMode == NetmodeID.Server)
-            {
+            if (Main.netMode == NetmodeID.Server) {
                 sendInfoTimer++;
-                if (sendInfoTimer >= sendInfoTimerWait)
-                {
+                if (sendInfoTimer >= sendInfoTimerWait) {
                     sendInfoTimer = 0;
-                    foreach (Chest chest in storageChests)
-                    {
+                    foreach (int chestId in storageChests) {
+                        Chest chest = Main.chest[chestId];
+                        if (chest == null)
+                            continue;
+
                         Item[] inv = chest.item;
                         inv.PercentFull(out float stackPercentFull, out float slotsPercentFull);
                         ChestIndicatorInfo.WriteAndSendChestLocation(chest.x, chest.y, stackPercentFull, slotsPercentFull);
@@ -227,7 +236,35 @@ namespace EngagedSkyblock.Tiles.TileEntities
             }
         }
 
-        public static void TryDepositToChest(IEnumerable<Item[]> inventories, int itemType, int stack, Point extractorWordCoordinates)
+		private void TryRemovingMyJunk(Item[] myChestInv, IEnumerable<Item[]> inventories) {
+            if (junkInMyChest == false)
+                return;
+
+            if (inventories.Count() < 1)
+                return;
+
+            junkInMyChest = false;
+			foreach (Item item in myChestInv) {
+                if (item.NullOrAir() || item.stack < 1)
+                    continue;
+
+                if (ItemID.Sets.ExtractinatorMode[item.type] >= 0)
+                    continue;
+
+                bool deposited = false;
+                foreach (Item[] inv in inventories) {
+					if (inv.Deposit(item, out int _)) {
+                        deposited = true;
+						break;
+					}
+				}
+
+                if (!deposited)
+                    junkInMyChest = true;
+            }
+		}
+
+		private void TryDepositToChest(IEnumerable<Item[]> inventories, int itemType, ref int stack, Point extractorWordCoordinates)
         {
             if (itemType <= ItemID.None)
                 return;
@@ -235,39 +272,47 @@ namespace EngagedSkyblock.Tiles.TileEntities
             if (stack <= 0)
                 return;
 
-            while (stack > 0)
-            {
+            while (stack > 0) {
                 Item item = new(itemType, stack);
                 int itemStack = stack;
-                if (item.stack > item.maxStack)
-                {
+                if (item.stack > item.maxStack) {
                     item.stack = item.maxStack;
                     itemStack = item.stack;
                 }
 
                 bool deposited = false;
-                foreach (Item[] inv in inventories)
-                {
+                foreach (Item[] inv in inventories) {
                     if (inv == null)
                         continue;
 
-                    if (inv.Deposit(item, out int _))
-                    {
+                    if (inv.Deposit(item, out int _)) {
                         deposited = true;
                         break;
                     }
                 }
 
-                if (!deposited)
-                {
-                    int number = Item.NewItem(null, extractorWordCoordinates.X, extractorWordCoordinates.Y, 1, 1, item.type, item.stack, noBroadcast: false, -1);
+                if (!deposited) {
+					int chest = GetChestID();
+					if (chest != -1 && (Main.netMode == NetmodeID.SinglePlayer || Chest.UsingChest(chest) == -1)) {
+                        Item[] inv = Main.chest[chest]?.item;
+                        if (inv != null) {
+                            if (inv.Deposit(item, out int junkAmount))
+								deposited = true;
 
-                    if (Main.netMode == NetmodeID.MultiplayerClient)
-                    {
-                        NetMessage.SendData(MessageID.SyncItem, -1, -1, null, number, 1f);
-                    }
+							if (junkAmount > 0)
+								junkInMyChest = true;
+						}
+					}
+					
+                    if (!deposited) {
+						int number = Item.NewItem(null, extractorWordCoordinates.X, extractorWordCoordinates.Y, 1, 1, item.type, item.stack, noBroadcast: false, -1);
 
-                    item.stack = 0;
+						if (Main.netMode == NetmodeID.MultiplayerClient) {
+							NetMessage.SendData(MessageID.SyncItem, -1, -1, null, number, 1f);
+						}
+
+						item.stack = 0;
+					}
                 }
 
                 stack -= itemStack - item.stack;
@@ -446,18 +491,22 @@ namespace EngagedSkyblock.Tiles.TileEntities
             }
 		}
 	}
-
+    */
 	public class ExtractinatorDust : ModDust
     {
-        public int timer = 0;
+        public override string Texture => $"EngagedSkyblock/Tiles/AutoExtractors/ExtractinatorDust";
+        private const int timer = 65;
+        private const float endScale = 0.99f;
+        private const float scaleStep = (1f - endScale) / (float)timer;
         public override bool Update(Dust dust)
         {
-            timer++;
-            if (timer >= 30)
+            dust.scale -= scaleStep;
+            if (dust.scale < endScale)
             {
-                dust.active = false;
+                 dust.active = false;
             }
-            return true;
+
+            return false;
         }
         public override void OnSpawn(Dust dust)
         {
@@ -466,5 +515,4 @@ namespace EngagedSkyblock.Tiles.TileEntities
         }
 
     }
-	*/
 }

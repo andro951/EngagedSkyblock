@@ -12,7 +12,6 @@ using androLib.Items;
 
 namespace EngagedSkyblock.Items {
 	public class WoodChips : ES_ModItem {
-		public override string Texture => (GetType().Namespace + ".Sprites." + Name).Replace('.', '/');
 		public override List<WikiTypeID> WikiItemTypes => new() { WikiTypeID.GrabBag };
 		public override string Artist => "andro951";
 		public override string Designer => "andro951";

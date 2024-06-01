@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
+using Terraria.ObjectData;
 using Terraria.UI;
 
 namespace EngagedSkyblock.Common.Globals {
@@ -81,104 +82,125 @@ namespace EngagedSkyblock.Common.Globals {
 		#endregion
 
 		public static void Update() {
-			int chestsChecked = 0;
-			for (; checkChestNum < Main.chest.Length && chestsChecked <= chestsPerTick; checkChestNum++) {
-				Chest chest = Main.chest[checkChestNum];
-				if (chest == null || Main.tile[chest.x, chest.y] is Tile tile && (!tile.HasTile || !TileID.Sets.BasicChest[tile.TileType]) || bugFilledChests.ContainsKey(checkChestNum))
-					continue;
-
-				Item[] inv = chest.item;
-				for (int i = 0; i < inv.Length; i++) {
-					Item item = inv[i];
-					if (BugItemTypes.Contains(item.type)) {
-						if (TryGetNextBugChanceDenom(checkChestNum, false, out int denom, out _))
-							bugFilledChests.Add(checkChestNum, denom);
-
-						break;
-					}
-				}
-
-				chestsChecked++;
-				chestsCounted++;
-			}
-
-			if (checkChestNum >= Main.chest.Length) {
-				chestsPerTick = chestsCounted / 600;
-				if (chestsPerTick < 1)
-					chestsPerTick = 1;
-
-				chestsCounted = 0;
-				checkChestNum = 0;
-			}
-			
-			if (bugFilledChests.Count < 1)
-				return;
-
-			List<(int, int)> bugFilledChestsEdits = new();
-			int tilesToCheck = spiderTileChecksPerTick.CeilingDivide(bugFilledChests.Count);
-			PlayerPositions.Clear();
-			if (Main.netMode == NetmodeID.SinglePlayer) {
-				PlayerPositions.Add(Main.LocalPlayer.Center);
-			}
-			else {
-				for (int i = 0; i < Main.player.Length; i++) {
-					Player player = Main.player[i];
-					if (player.NullOrNotActive())
+			if (Main.netMode != NetmodeID.MultiplayerClient) {
+				int chestsChecked = 0;
+				for (; checkChestNum < Main.chest.Length && chestsChecked <= chestsPerTick; checkChestNum++) {
+					Chest chest = Main.chest[checkChestNum];
+					if (chest == null || Main.tile[chest.x, chest.y] is Tile tile && (!tile.HasTile || !TileID.Sets.BasicChest[tile.TileType]) || bugFilledChests.ContainsKey(checkChestNum))
 						continue;
 
-					PlayerPositions.Add(player.Center);
-				}
-			}
+					Item[] inv = chest.item;
+					for (int i = 0; i < inv.Length; i++) {
+						Item item = inv[i];
+						if (BugItemTypes.Contains(item.type)) {
+							if (TryGetNextBugChanceDenom(checkChestNum, false, out int denom, out _))
+								bugFilledChests.Add(checkChestNum, denom);
 
-			foreach (KeyValuePair<int, int> p in bugFilledChests) {
-				Chest chest = Main.chest[p.Key];
-				Vector2 chestPosition = new Vector2(chest.x, chest.y).ToWorldCoordinates(16f, 16f);
-				foreach (Vector2 playerCenter in PlayerPositions) {
-					float xDist = Math.Abs(playerCenter.X - chestPosition.X);
-					float yDist = Math.Abs(playerCenter.Y - chestPosition.Y);
-					if (xDist < PlayerDistanceToDisableX && yDist < PlayerDistanceToDisableY)
-						return;
-				}
-				
-				SpiderGridManager.ProcessNewGrid(p.Key, tilesToCheck);
-				if (Main.rand.NextBool(p.Value)) {
-					if (TryGetNextBugChanceDenom(p.Key, true, out int denom, out Action EatBug)) {
-						if (CreateSpiderWall(p.Key, EatBug))
-							bugFilledChestsEdits.Add((p.Key, denom));
-					}
-					else {
-						bugFilledChestsEdits.Add((p.Key, -1));
-					}
-				}
-			}
-
-			foreach ((int key, int value) in bugFilledChestsEdits) {
-				if (value == -1) {
-					bugFilledChests.Remove(key);
-					ref Chest chest = ref Main.chest[key];
-					Tile left = Main.tile[chest.x - 1, chest.y];
-					Tile leftUp = Main.tile[chest.x - 1, chest.y - 1];
-					for (int chestX = chest.x; chestX <= chest.x + 1; chestX++) {
-						for (int chestY = chest.y; chestY <= chest.y + 1; chestY++) {
-							Main.tile[chestX, chestY].ClearTile();
+							break;
 						}
 					}
 
-					if (!left.HasTile && !leftUp.HasTile) {
-						PlaceLargePile(chest.x, chest.y + 1, 24);
-					}
-					else {
-						PlaceSmallPile(chest.x, chest.y + 1, 32, true);
-					}
+					chestsChecked++;
+					chestsCounted++;
+				}
 
-					chest = null;
+				if (checkChestNum >= Main.chest.Length) {
+					chestsPerTick = chestsCounted / 600;
+					if (chestsPerTick < 1)
+						chestsPerTick = 1;
+
+					chestsCounted = 0;
+					checkChestNum = 0;
+				}
+
+				if (bugFilledChests.Count < 1)
+					return;
+
+				List<(int, int)> bugFilledChestsEdits = new();
+				int tilesToCheck = spiderTileChecksPerTick.CeilingDivide(bugFilledChests.Count);
+				PlayerPositions.Clear();
+				if (Main.netMode == NetmodeID.SinglePlayer) {
+					PlayerPositions.Add(Main.LocalPlayer.Center);
 				}
 				else {
-					bugFilledChests[key] = value;
-				}
-			}
+					for (int i = 0; i < Main.player.Length; i++) {
+						Player player = Main.player[i];
+						if (player.NullOrNotActive())
+							continue;
 
-			SpiderGridManager.CleanUp(bugFilledChests);
+						PlayerPositions.Add(player.Center);
+					}
+				}
+
+				foreach (KeyValuePair<int, int> p in bugFilledChests) {
+					Chest chest = Main.chest[p.Key];
+					Vector2 chestPosition = new Vector2(chest.x, chest.y).ToWorldCoordinates(16f, 16f);
+					foreach (Vector2 playerCenter in PlayerPositions) {
+						float xDist = Math.Abs(playerCenter.X - chestPosition.X);
+						float yDist = Math.Abs(playerCenter.Y - chestPosition.Y);
+						if (xDist < PlayerDistanceToDisableX && yDist < PlayerDistanceToDisableY)
+							return;
+					}
+
+					SpiderGridManager.ProcessNewGrid(p.Key, tilesToCheck);
+					if (Main.rand.NextBool(p.Value)) {
+						if (TryGetNextBugChanceDenom(p.Key, true, out int denom, out Action EatBug)) {
+							if (CreateSpiderWall(p.Key, EatBug))
+								bugFilledChestsEdits.Add((p.Key, denom));
+						}
+						else {
+							bugFilledChestsEdits.Add((p.Key, -1));
+						}
+					}
+				}
+
+				foreach ((int key, int value) in bugFilledChestsEdits) {
+					if (value == -1) {
+						bugFilledChests.Remove(key);
+						Chest chest = Main.chest[key];
+						int x = chest.x;
+						int y = chest.y;
+						if (Chest.CanDestroyChest(x, y)) {
+							Tile tile = Main.tile[x, y];
+							TileObjectData data = TileObjectData.GetTileData(tile);
+							if (data != null && data.Width == 2 && data.Height == 2) {
+								int tileType = tile.TileType;
+								Chest.DestroyChest(x, y);
+								Tile left = Main.tile[x - 1, y];
+								Tile leftUp = Main.tile[x - 1, y - 1];
+								for (int chestX = x; chestX <= x + 1; chestX++) {
+									for (int chestY = y; chestY <= y + 1; chestY++) {
+										if (TileID.Sets.BasicChest[Main.tile[chestX, chestY].TileType])
+											Main.tile[chestX, chestY].ClearTile();
+									}
+								}
+
+								int number2 = 1;
+								if (Main.tile[x, y].TileType == 467)
+									number2 = 5;
+
+								if (Main.tile[x, y].TileType >= TileID.Count)
+									number2 = 101;
+
+								NetMessage.SendData(34, -1, -1, null, number2, x, y, 0f, key, tileType, 0);
+								NetMessage.SendTileSquare(-1, x, y, 3);
+
+								if (!left.HasTile && !leftUp.HasTile) {
+									PlaceLargePile(chest.x, chest.y + 1, 24);
+								}
+								else {
+									PlaceSmallPile(chest.x, chest.y + 1, 32, true);
+								}
+							}
+						}
+					}
+					else {
+						bugFilledChests[key] = value;
+					}
+				}
+
+				SpiderGridManager.CleanUp(bugFilledChests);
+			}
 		}
 
 		/// <param name="i">middle x</param>
@@ -196,6 +218,9 @@ namespace EngagedSkyblock.Common.Globals {
 					target.TileFrameX = (short)((largePileID * 3 + x + 1) * 18);
 				}
 			}
+
+			if (Main.netMode == NetmodeID.Server)
+				NetMessage.SendTileSquare(-1, i - 2, j - 2, 5, 4);
 		}
 
 		/// <param name="i">left x</param>
@@ -211,6 +236,9 @@ namespace EngagedSkyblock.Common.Globals {
 					target.TileFrameY = 18;
 					target.TileFrameX = (short)((smallPileID * 2 + x) * 18);
 				}
+
+				if (Main.netMode == NetmodeID.Server)
+					NetMessage.SendTileSquare(-1, i - 1, j - 1, 4, 3);
 			}
 			else {
 				Tile target = Main.tile[i, j];
@@ -218,6 +246,9 @@ namespace EngagedSkyblock.Common.Globals {
 				target.HasTile = true;
 				target.TileType = TileID.SmallPiles;
 				target.TileFrameX = (short)(smallPileID * 18);
+
+				if (Main.netMode == NetmodeID.Server)
+					NetMessage.SendTileSquare(-1, i - 1, j - 1, 3, 3);
 			}
 		}
 		private const int HighestBaitLimit = 100;
