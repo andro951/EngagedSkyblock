@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using androLib.Common.Utility;
+using Microsoft.Xna.Framework;
 using MonoMod.Cil;
 using System;
 using System.Collections.Generic;
@@ -18,20 +19,24 @@ namespace EngagedSkyblock.Tiles {
 			IL_Main.UpdateTime += IL_Main_UpdateTime;
 		}
 		private static void IL_Main_UpdateTime(ILContext il) {
-			//// double num = 86400.0 / Main.desiredWorldEventsUpdateRate / 24.0;
-			//IL_0143: ldc.r8 86400
-			//IL_014c: ldsfld float64 Terraria.Main::desiredWorldEventsUpdateRate
-			//IL_0151: div
-			//IL_0152: ldc.r8 24
-			//IL_015b: div
+			//// if (Main.rand.NextDouble() <= 1.0 / (num2 * 5.75))
+			//IL_01fa: call class Terraria.Utilities.UnifiedRandom Terraria.Main::get_rand()
+			//IL_01ff: callvirt instance float64 Terraria.Utilities.UnifiedRandom::NextDouble()
+			//IL_0204: ldc.r8 1
+			//IL_020d: ldloc.3
+			//IL_020e: ldc.r8 5.75
+			//IL_0217: mul
+			//IL_0218: div
 
 			var c = new ILCursor(il);
 
 			if (!c.TryGotoNext(MoveType.After,
-				i => i.MatchLdcR8(86400),
-				i => i.MatchLdsfld(typeof(Main), nameof(Main.desiredWorldEventsUpdateRate)),
-				i => i.MatchDiv(),
-				i => i.MatchLdcR8(24),
+				i => i.MatchCall(typeof(Main), "get_rand"),
+				i => i.MatchCallvirt(typeof(Terraria.Utilities.UnifiedRandom), "NextDouble"),
+				i => i.MatchLdcR8(1.0),
+				i => i.MatchLdloc(3),
+				i => i.MatchLdcR8(5.75),
+				i => i.MatchMul(),
 				i => i.MatchDiv()
 				)) {
 				throw new Exception("Failed to find instructions IL_Main_UpdateTime");
@@ -39,15 +44,15 @@ namespace EngagedSkyblock.Tiles {
 
 			c.EmitDelegate(ModifyRainChance);
 		}
-		private static double ModifyRainChance(double chance) {
+		private static double ModifyRainChance(double chanceDenom) {
 			if (!ES_WorldGen.SkyblockWorld)
-				return chance;
+				return chanceDenom;
 
 			if (TotemActive()) {
-				chance /= 10d;
+				chanceDenom *= 10d;
 			}
 
-			return chance;
+			return chanceDenom;
 		}
 		public override void SetStaticDefaults() {
 			base.SetStaticDefaults();
@@ -72,6 +77,7 @@ namespace EngagedSkyblock.Tiles {
 			};
 			TileObjectData.newTile.StyleHorizontal = true;
 			TileObjectData.newTile.LavaDeath = false;
+			TileObjectData.newTile.DrawYOffset = 2;
 			TileObjectData.newTile.AnchorBottom = new AnchorData(AnchorType.SolidTile | AnchorType.SolidWithTop | AnchorType.SolidSide | AnchorType.Table, TileObjectData.newTile.Width, 0);
 			TileObjectData.addTile(Type);
 		}
