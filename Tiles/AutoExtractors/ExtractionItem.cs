@@ -1,18 +1,110 @@
-﻿using MonoMod.RuntimeDetour;
+﻿using androLib.Common.Utility;
+using MonoMod.RuntimeDetour;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Threading.Channels;
 using Terraria;
+using Terraria.ID;
 using Terraria.ModLoader;
 
 namespace EngagedSkyblock.Tiles {
     internal class ExtractionItem : GlobalItem
     {
-        public override void ExtractinatorUse(int extractType, int extractinatorBlockType, ref int resultType, ref int resultStack)
-        {
-            //if (resultType >= ItemID.CopperCoin && resultType <= ItemID.GoldCoin) {
-            //    if (extractinatorBlockType == ModContent.TileType<AutoExtractorTier5Tile>() && Main.rand.NextBool(40))
-            //        resultType = ItemID.PlatinumCoin;
-            //}
+        public struct TypeChancePair {
+            public int ItemType;
+            public float Chance;
+            public TypeChancePair(int itemType, float chance) {
+                ItemType = itemType;
+                Chance = chance;
+			}
+			public override string ToString() {
+				return $"{ItemType.GetItemIDOrName()} ({Chance.PercentString()})";
+			}
+		}
+        public struct ExtractTypeSet {
+            public static SortedDictionary<int, ExtractTypeSet> AllExtractTypes = new();
+            public int DefaultResult { get; private set; }
+            public readonly List<TypeChancePair> ExtractResults;
+            public const int StackChancePerTier = 8;//%
+            public const float RareChancePerTier = 0.25f;
+
+			public ExtractTypeSet(IEnumerable<TypeChancePair> extractResults, int defaultResult = ItemID.None) {
+                DefaultResult = defaultResult;
+                ExtractResults = extractResults.GroupBy(er => er.Chance).Select(g => g.ToList().OrderBy(er => er.ItemType)).SelectMany(l => l).ToList();
+            }
+            public void GetResult(int extractinatorBlockType, ref int resultType, ref int resultStack) {
+                int tier = 0;//TODO from extractinatorBlockType
+                int stackRand = Main.rand.Next(100);
+                int stackChance = tier * StackChancePerTier;
+                if (resultStack < 1)
+                    resultStack = 1;
+
+                if (stackRand < stackChance)
+                    resultStack *= 2;
+
+				float rand = Main.rand.NextFloat();
+                float runningTotal = 0f;
+                float mult = 1f + RareChancePerTier * tier;
+                foreach (TypeChancePair p in ExtractResults) {
+                    runningTotal += p.Chance * mult;
+                    if (rand < runningTotal) {
+                        resultType = p.ItemType;
+                        return;
+                    }
+                }
+
+                resultType = DefaultResult;
+            }
+            public static void PostSetupContent() {
+                AllExtractTypes = new() {
+                    { ExtractID.Sandstone, new(new List<TypeChancePair>() {
+                        new(ItemID.Amber, 0.005f),
+                        new(ItemID.SandBlock, 0.5f),
+                    }) },
+
+                };
+			}
+			public override string ToString() {
+                string s = "";
+				float runningTotal = 0f;
+                bool first = true;
+				foreach (TypeChancePair p in ExtractResults) {
+                    if (first) {
+                        first = false;
+                    }
+                    else {
+                        s += ", ";
+                    }
+
+					runningTotal += p.Chance;
+                    float chance = Math.Min(p.Chance, 1f - runningTotal);
+                    s += $"{p.ItemType.GetItemIDOrName()} ({p.Chance.PercentString()})";
+				}
+
+                return s;
+			}
+		}
+        private static void ExtractinatorUseDetour(ref int resultType, ref int resultStack, int extractType, int extractinatorBlockType) {
+            if (ExtractTypeSet.AllExtractTypes.TryGetValue(extractType, out ExtractTypeSet extractTypeSet))
+                extractTypeSet.GetResult(extractinatorBlockType, ref resultType, ref resultStack);
+        }
+        private static class ExtractID {
+            public const short Slit = 0;
+            public const short Slush = ItemID.SlushBlock;
+            public const short DesertFossil = ItemID.DesertFossil;
+            public const short FishingJunk = ItemID.OldShoe;
+            public const short Moss = ItemID.LavaMoss;
+            public const short Sandstone = ItemID.Sandstone;
+        }
+        public static void PostSetupContent() {
+            ItemID.SlushBlock.SetExtractionModeSelf();
+            ItemID.Sandstone.SetExtractionModeSelf();
+            ItemID.CorruptSandstone.SetExtractionMode(ExtractID.Sandstone);
+            ItemID.CrimsonSandstone.SetExtractionMode(ExtractID.Sandstone);
+            ItemID.HallowSandstone.SetExtractionMode(ExtractID.Sandstone);
+            ItemID.SmoothSandstone.SetExtractionMode(ExtractID.Sandstone);
         }
 
         #region Detours and Reflection
@@ -24,7 +116,7 @@ namespace EngagedSkyblock.Tiles {
             extractinatorHook.Apply();
             On_Player.DropItemFromExtractinator += On_Player_DropItemFromExtractinator;
             On_Player.ExtractinatorUse += On_Player_ExtractinatorUse;
-        }
+		}
 
         private void On_Player_ExtractinatorUse(On_Player.orig_ExtractinatorUse orig, Player self, int extractType, int extractinatorBlockType)
         {
@@ -69,8 +161,8 @@ namespace EngagedSkyblock.Tiles {
         public static void ItemLoader_ExtractinatorUse_Detour(orig_ItemLoader_ExtractinatorUse orig, ref int resultType, ref int resultStack, int extractType, int extractinatorBlockType)
         {
             orig(ref resultType, ref resultStack, extractType, extractinatorBlockType);
-            if (Extracting)
-            {
+            ExtractinatorUseDetour(ref resultType, ref resultStack, extractType, extractinatorBlockType);
+            if (Extracting) {
                 extractItemType = resultType;
                 extractStack = resultStack;
                 resultType = 0;
@@ -78,5 +170,11 @@ namespace EngagedSkyblock.Tiles {
         }
 
         #endregion
+    }
+    public static class ExtractionItemStaticMethods {
+        //public static void SetExtractionMode(this int itemType, int extractionItemType) => 
+        public static void SetExtractionMode(this short itemType, int extractionItemType) => ItemID.Sets.ExtractinatorMode[itemType] = extractionItemType;
+		//public static void SetExtractionModeSelf(this int itemType) => SetExtractionMode(itemType, itemType);
+        public static void SetExtractionModeSelf(this short itemType) => SetExtractionMode(itemType, itemType);
     }
 }
