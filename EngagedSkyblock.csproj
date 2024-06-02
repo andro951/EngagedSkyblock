@@ -9,11 +9,9 @@
   <ItemGroup>
     <None Remove="Content\Dusts\GrowthDust.png" />
     <None Remove="Content\GuideBook\Screenshots\Valid Dungeon.PNG" />
-    <None Remove="Items\AutoExtractors\AutoExtractor.png" />
-    <None Remove="Items\AutoExtractors\AutoExtractorTier2.png" />
-    <None Remove="Items\AutoExtractors\AutoExtractorTier3.png" />
-    <None Remove="Items\AutoExtractors\AutoExtractorTier4.png" />
-    <None Remove="Items\AutoExtractors\AutoExtractorTier5.png" />
+    <None Remove="Items\AutoExtractors\HellstoneAutoExtractinator.png" />
+    <None Remove="Items\AutoExtractors\LuminiteAutoExtractinator.png" />
+    <None Remove="Items\AutoExtractors\WoodAutoExtractinator.png" />
     <None Remove="Items\Sprites\AdamantiteBlockPlacer.png" />
     <None Remove="Items\Sprites\ChlorophyteBlockPlacer.png" />
     <None Remove="Items\Sprites\CobaltBlockPlacer.png" />
@@ -51,13 +49,11 @@
     <None Remove="Localization\pt-BR.hjson" />
     <None Remove="Localization\ru-RU.hjson" />
     <None Remove="Localization\zh-Hans.hjson" />
-    <None Remove="Tiles\AutoExtractors\AutoExtractorTier1Tile.png" />
-    <None Remove="Tiles\AutoExtractors\AutoExtractorTier2Tile.png" />
-    <None Remove="Tiles\AutoExtractors\AutoExtractorTier3Tile.png" />
-    <None Remove="Tiles\AutoExtractors\AutoExtractorTier4Tile.png" />
-    <None Remove="Tiles\AutoExtractors\AutoExtractorTier5Tile.png" />
     <None Remove="Tiles\AutoExtractors\ExtractinatorDust.png" />
     <None Remove="Tiles\AutoExtractors\ExtractinatorIndicatorDot.png" />
+    <None Remove="Tiles\AutoExtractors\HellstoneAutoExtractinatorTile.png" />
+    <None Remove="Tiles\AutoExtractors\LuminiteAutoExtractinatorTile.png" />
+    <None Remove="Tiles\AutoExtractors\WoodAutoExtractinatorTile.png" />
     <None Remove="Tiles\Sprites\AdamantiteBlockPlacer.png" />
     <None Remove="Tiles\Sprites\ChlorophyteBlockPlacer.png" />
     <None Remove="Tiles\Sprites\CobaltBlockPlacer.png" />

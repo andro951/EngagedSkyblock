@@ -1,4 +1,5 @@
 Engaged Skyblock is about staying Engaged while playing Skyblock instead of waiting for things to happen or doing the exact same thing for coutless hours.
+It focuses on building and automation.  The starting world is a tiny island with a tree and a chest with a bucket of water and lava.  The rest of the world is empty.
 
 Note: Everything from this mod is only active on worlds with one of the skyblock seeds shown below.
 
@@ -11,12 +12,14 @@ How do I make a Skyblock world?
 
 Engaged Features
 	-Speedy Growth: Trees/Grass/etc grow faster when a player (that is running/moving fast/jumping) is nearby.  (Similar to Twerking for trees from Minecraft)
-	-Mud [i:176] to Clay [i:133]: Mud blocks with an empty tile above and not within 4 blocks of water (connected by mud or dirt) will dry out and turn into clay blocks.
+	-Leaves: Breaking/Shaking trees spawns Leaf Blocks [i:192] which can be used to craft dirt blocks.
+	-Dirt [i:133] to Mud [i:176]: Dirt that is directly touching water or mud that has a path to water (10 block radius from water), or open to the sky while raining will turn to mud.
+	-Mud [i:176] to Dirt [i:133]: Mud blocks not touching water or mud that has a path to water or open the the sky while raining will dry out to dirt.
 	-Hardened Sand [i:3272][i:3274][i:3275][i:3338]: Sand blocks with 4 blocks above it that can fall like sand/silt can randomly turn to hardened sand.
 	-Desert Fossils [i:3347]: Organic blocks that are burred (covered on all 4 sides) in a desert will eventually turn into desert fossils.
-		-Conversion chances: Bone blocks(20%), Poo(10%), glowing mushroom(4%), Living tree leaves(2%), cactus(1.5%), bamboo(1.5%), pumpkin(1.5%), hay(1%), wood(0.1%)
+		-Conversion chances: Bone blocks(20%), Poo(10%), glowing mushroom(4%), cactus(1.5%), bamboo(1.5%), pumpkin(1.5%), hay(1%), leaf block(0.5%), wood(0.1%)
 
-	-Hammers: Hammers work as pickaxes (When holding right click).  Breaking blocks with a hammer has different effects than pickaxes:
+	-Hammers: Hammers work as pickaxes (When holding right click).  Breaking blocks with a hammer has different effects than pickaxes.
 		-Wood [i:9] -> Wood Chips (Wood Chips are grab bags that drop acorns [i:27] and bugs [i:3192] [i:3193] [i:3194])
 		-Stone [i:3] -> Sand [i:169]
 		-Snow Block [i:593] -> Ice Block [i:664] (Requires having 1 snow block on top of another and converts the 2 blocks into 1 ice block)
@@ -33,7 +36,8 @@ Engaged Features
 		-Sand [i:169] that is touched by lava [i:207] will turn to sandstone [i:3271] after a short delay.
 		-Snow [i:593] that is touched by water [i:206] will turn to slush [i:1103] after a short delay.
 		-Granite [i:3086] that is touched by water [i:206] and lava [i:207] at the same time will turn to marble [i:3081] after a short delay.
-		-Hay [i:1727] that is touched by water [i:206] and honey [i:1128] at the same time will turn to ash [i:172] after a short delay.
+		-Hay [i:1727] that is touched by lava [i:207] will turn to ash [i:172] after a short delay.
+		-Ash [i:172] that is touched by water [i:206] will turn to clay [i:133] after a long delay.
 
 	-Spreading Ice [i:664]: Water [i:206] that is being touched by ice [i:664] on 2 sides will turn to ice after a short delay.
 
@@ -46,8 +50,8 @@ Engaged Features
 	-Spiders: Placing bugs [i:3194] in a chest [i:48] will slowly consume the bugs to convert nearby walls to spider walls.
 		(Only converts walls when no players can see the chest and block being converted.) "Silk is nice, but is it worth the price?"
 
-	-Chlorophyte [i:947]: 1 tries to spawn by replacing a mud [i:176]/jungle grass [i:195] block when Wall of Flesh is killed for the first time.
-		Also has an extremely low chance of converting a mud [i:176] tile surrounded by mud [i:176], jungle grass [i:195] and/or clay [i:195] on all sides.
+	-Chlorophyte [i:947]: 1 chlorophyte ore tries to spawn by replacing a mud [i:176]/jungle grass [i:195] block when Wall of Flesh is killed for the first time.
+		Also has an extremely low chance of converting a mud [i:176] tile surrounded by mud [i:176] or jungle grass [i:195] on all sides.
 		Chlorophyte is now allowed to spread anywhere instead of only underground, but has a reduced spread rate above ground (same as remix world seed)
 
 	-Extra Extractinator [i:997] Recipes:
@@ -55,14 +59,35 @@ Engaged Features
 		Life Crystal [i:29]: 1% from Desert Fossils [i:3347]
 
 	-Recipes
-		Mud Block [i:176]: [Sink] [i:] 1 Dirt Block [i:] + 1 Hay Block [i:] (Vanilla allows 1 Dirt Block for 1 Mud Block at a sink OR WHEN NEAR WATER)
+		Dirt Block [i:]: [i:192] 1 Leaf Block + [i:424] 1 Silt Block
 		Silt Block [i:424]: [Furnace] [i:] 1 Sand Block [i:169] + 1 Clay Block [i:133]
 		Snow Block [i:593]: [None] 15 snowballs [i:949]
 		Dungeon Bricks [i:134] [i:137] [i:139]: 40 stone [i:3] + 10 obsidian [i:173] + 1 dye [i:1015] to make the 50 dungeon bricks [i:134] of the matching color.
 			Every basic dye color has an associated dungeon brick recipe (even if the colors match poorly)
+		Unsafe Dungeon Walls [i:5365] [i:5371] [i:5368]: Heavy Workbench [i:2172] 1 Dungeon Brick [i:134] [i:137] [i:139] after Skeletron is defeated.
+		Lihzahrd Brick [i:1101]: [Hellforge] 40 Clay Block [i:133] + 10 Gold/Platinum Bar [i:19]/[i:706]
+		Extractinator [i:997]: [Anvil] 20 Iron/Lead bar [i:22]/[i:704] + Wood Auto Extractinator
+		Chlorophyte Extractinator [i:5296]: [Mythril Anvil] 20 Chlorophyte Bar [i:1006] + Hellstone Auto Extractinator
 
 	-NPC drops
 		Slimes: Acorns [i:27] (5%), Grass Seeds [i:62] (2%), Jungle Grass Seeds [i:195] (2%)
+
+	-Signs
+		Signs [i:171] can be used to move some locations in the game by writing the associated keyword on the sign.
+			-World Spawn pont: "Spawn"  (Requires a tile that you can stand under the left side of the sign and no solid tiles or liquids in the 2x3 space above the floor)
+			-Dungeon (Old Man and Lunatic Cultist spawn point): "Dungeon" (Requires a dungeon tile brick under the left side of the sign, no solid tile 7 tiles above 
+				the dungeon brick, and 10 solid blocks on either side of the brick for spawning the cultists)
+	-Block Breakers
+		Break the block they are facing repeatedly. (2 red dots are the side they will break a block on.)
+		Higher tier block breakers have a higher pickaxe power and attempt to break block faster.
+		If wire is placed on them, they will only activate when the wire is on.
+		Left clicking them with a hammer will rotate them.
+
+	-Block Placers
+		Place blocks from a chest they are touching in front of them.  Facing direction same as Block Breakers.
+		Higher tier block placers place blocks more often.
+		If wire is placed on them, they will only activate when the wire is on.
+		Left clicking them with a hammer will rotate them.
 
 Progression Tips
 	-Liquids can be duplicated if done correctly.  (3:30 - https://www.youtube.com/watch?v=CLBMZyBfQXE)

@@ -11,43 +11,29 @@ using androLib.Common.Utility;
 using androLib;
 using ReLogic.Content;
 using Microsoft.Xna.Framework.Graphics;
-using EngagedSkyblock.Tiles.AutoExtractors;
+using EngagedSkyblock.Tiles;
 using System;
 
 namespace EngagedSkyblock.Tiles.TileEntities
 {
-    public abstract class AutoExtractor_BaseEntity : ModTileEntity
-    {
+    public abstract class AutoExtractorTE : ModTileEntity {
         protected abstract int Timer { get; }
         protected abstract int TileToBeValidOn { get; }
-        protected abstract int LootMultiplier { get; }
-        protected abstract int ConsumeMultiplier { get; }
-
-        private int timer = 0;
+		protected abstract int ConsumeMultiplier { get; }
+        
+		private int timer = 0;
         private int sendInfoTimer = sendInfoTimerWait;
         private const int sendInfoTimerWait = 60 * 5;
-        public static Point16 TilePositionToMultiTileTopLeft(int x, int y, int multiTileWidth = 48, int multiTileHeight = 48)
-        {
-            Tile tile = Main.tile[x, y];
-            int left = x;
-            int top = y;
-            int localTileFrameX = tile.TileFrameX % multiTileWidth;
-            if (localTileFrameX != 0)
-            {
-                left -= localTileFrameX / 18;
-            }
+		public static Point16 TilePositionToMultiTileTopLeft(int x, int y, int tileType = -1) {
+			if (tileType == -1)
+				tileType = Main.tile[x, y].TileType;
 
-            int localTileFrameY = tile.TileFrameY % multiTileHeight;
-            if (localTileFrameY != 0)
-            {
-                top -= localTileFrameY / 18;
-            }
-
-            return new Point16(left, top);
-        }
-        public static bool TryGetChest(Point16 topLeft, out int chest) => TryGetChest(topLeft.X, topLeft.Y, out chest);
-        public static bool TryGetChest(int x, int y, out int chestId)
-        {
+			Point16 baseCoords = new Point16(x, y);
+			TileObjectData.OriginToTopLeft(tileType, 0, ref baseCoords);
+			return baseCoords;
+		}
+		public static bool TryGetChest(Point16 topLeft, out int chest) => TryGetChest(topLeft.X, topLeft.Y, out chest);
+        public static bool TryGetChest(int x, int y, out int chestId) {
             chestId = Chest.FindChest(x, y);
             if (chestId > -1)
                 return true;
@@ -55,66 +41,36 @@ namespace EngagedSkyblock.Tiles.TileEntities
             return false;
         }
         public bool TryGetMyChest(out int chest) => TryGetChest(Position.X, Position.Y, out chest);
-        private static int T1
-        {
-            get
-            {
+        public static int T1 {
+            get {
                 if (t1 == -1)
-                    t1 = ModContent.TileType<AutoExtractorTier1Tile>();
+                    t1 = ModContent.TileType<WoodAutoExtractinatorTile>();
 
                 return t1;
             }
         }
         private static int t1 = -1;
-        private static int T2
-        {
-            get
-            {
-                if (t2 == -1)
-                    t2 = ModContent.TileType<AutoExtractorTier2Tile>();
-
-                return t2;
-            }
-        }
-        private static int t2 = -1;
-        private static int T3
-        {
-            get
-            {
-                if (t3 == -3)
-                    t3 = ModContent.TileType<AutoExtractorTier3Tile>();
+        public static int T3 {
+            get {
+                if (t3 == -1)
+                    t3 = ModContent.TileType<HellstoneAutoExtractinatorTile>();
 
                 return t3;
             }
         }
-        private static int t3 = -3;
-        private static int T4
-        {
-            get
-            {
-                if (t4 == -4)
-                    t4 = ModContent.TileType<AutoExtractorTier4Tile>();
-
-                return t4;
-            }
-        }
-        private static int t4 = -4;
-        private static int T5
-        {
-            get
-            {
-                if (t5 == -5)
-                    t5 = ModContent.TileType<AutoExtractorTier5Tile>();
+        private static int t3 = -1;
+        public static int T5 {
+            get {
+                if (t5 == -1)
+                    t5 = ModContent.TileType<LuminiteAutoExtractinatorTile>();
 
                 return t5;
             }
         }
-        private static int t5 = -5;
+        private static int t5 = -1;
         public static bool AutoExtractorTileType(int tileType) => tileType >= T1 && tileType <= T5;
-        public static bool ValidTileTypeForStorageChest(int tileType)
-        {
-            switch (tileType)
-            {
+        public static bool ValidTileTypeForStorageChest(int tileType) {
+            switch (tileType) {
                 case TileID.Containers:
                 case TileID.Containers2:
                 case TileID.Dressers:
@@ -126,21 +82,8 @@ namespace EngagedSkyblock.Tiles.TileEntities
                     return true;
             }
         }
-        public override int Hook_AfterPlacement(int i, int j, int type, int style, int direction, int alternate)
-        {
-            if (Main.netMode == NetmodeID.MultiplayerClient)
-            {
-                NetMessage.SendTileSquare(Main.myPlayer, i, j, 3, 3);
-                NetMessage.SendData(MessageID.TileEntityPlacement, number: i, number2: j, number3: Type);
-                return -1;
-            }
 
-            int placedEntity = Place(i, j);
-            return placedEntity;
-        }
-
-        public override bool IsTileValidForEntity(int x, int y)
-        {
+        public override bool IsTileValidForEntity(int x, int y) {
             var tile = Main.tile[x, y];
             return tile.TileType == TileToBeValidOn;
         }
@@ -149,28 +92,24 @@ namespace EngagedSkyblock.Tiles.TileEntities
         public override void OnNetPlace() => NetMessage.SendData(MessageID.TileEntitySharing, number: ID, number2: Position.X, number3: Position.Y);
         private List<int> storageChests = new();
         private bool? junkInMyChest = null;
-        public override void Update()
-        {
+        public override void Update() {
             timer++;
-            if (timer >= Timer)
-            {
-                int[] chestPositionXOffsets = new int[] { -2, 3 };
+            if (timer >= Timer) {
+				timer = Main.rand.Next(-5, 6);//Deviate them slightly to hopefully reduce strain on 1 tick
+
+				int[] chestPositionXOffsets = new int[] { -2, 3 };
                 int[] chestPositionYOffsets = new int[] { 1, 0 };
                 storageChests = new();
-                for (int i = 0; i < chestPositionXOffsets.Length; i++)
-                {
+                for (int i = 0; i < chestPositionXOffsets.Length; i++) {
                     int xOffset = chestPositionXOffsets[i];
-                    for (int j = 0; j < chestPositionYOffsets.Length; j++)
-                    {
+                    for (int j = 0; j < chestPositionYOffsets.Length; j++) {
                         int yOffset = chestPositionYOffsets[j];
                         int chestX = Position.X + xOffset;
                         int chestY = Position.Y + yOffset;
                         int chestId = Chest.FindChest(chestX, chestY);
-                        if (chestId > -1)
-                        {
+                        if (chestId > -1) {
                             Tile tile = Main.tile[chestX, chestY];
-                            if (tile.HasTile && ValidTileTypeForStorageChest(tile.TileType))
-                            {
+                            if (tile.HasTile && ValidTileTypeForStorageChest(tile.TileType)) {
                                 storageChests.Add(chestId);
                                 break;
                             }
@@ -178,14 +117,13 @@ namespace EngagedSkyblock.Tiles.TileEntities
                     }
                 }
 
-                int chest = GetChestID();
-                if (chest != -1 && (Main.netMode == NetmodeID.SinglePlayer || Chest.UsingChest(chest) == -1)) {
-                    Chest extractorChest = Main.chest[chest];
-                    Point extractorWordCoordinates = Position.ToWorldCoordinates().ToPoint();
+                int chestNum = GetChestID();
+                if (chestNum != -1 && (Main.netMode == NetmodeID.SinglePlayer || Chest.UsingChest(chestNum) == -1)) {
+                    Item[] extractinatorInv = Main.chest[chestNum].item;
                     int i = 0;
                     for (int z = 0; z < ConsumeMultiplier; z++) {
-                        for (; i < extractorChest.item.Length; i++) {
-                            Item item = extractorChest.item[i];
+                        for (; i < extractinatorInv.Length; i++) {
+                            Item item = extractinatorInv[i];
                             if (item.NullOrAir())
                                 continue;
 
@@ -203,10 +141,9 @@ namespace EngagedSkyblock.Tiles.TileEntities
 
                             ExtractionItem.AutoExtractinatorUse(extractinatorMode, TileToBeValidOn, out int type, out int stack);
 
-                            int newItemStack = stack * LootMultiplier;
                             IEnumerable<Item[]> inventories = storageChests.Where(c => Main.chest[c] != null && (Main.netMode == NetmodeID.SinglePlayer || Chest.UsingChest(c) == -1)).Select(c => Main.chest[c].item);
-                            TryRemovingMyJunk(extractorChest.item, inventories);
-                            TryDepositToChest(inventories, type, ref newItemStack, extractorWordCoordinates);
+                            TryRemovingMyJunk(extractinatorInv, inventories);
+                            TryDepositToChest(inventories, type, ref stack);
 
 							break;
                         }
@@ -215,15 +152,13 @@ namespace EngagedSkyblock.Tiles.TileEntities
                 else {
                     $"Failed to find chest for the AutoExtractor at ({Position.X}, {Position.Y})".LogSimple();
                 }
-
-                timer = 0;
             }
 
             if (Main.netMode == NetmodeID.Server) {
                 sendInfoTimer++;
                 if (sendInfoTimer >= sendInfoTimerWait) {
-                    sendInfoTimer = 0;
-                    foreach (int chestId in storageChests) {
+                    sendInfoTimer = Main.rand.Next(-5, 6);//Deviate them slightly to hopefully reduce strain on 1 tick;
+					foreach (int chestId in storageChests) {
                         Chest chest = Main.chest[chestId];
                         if (chest == null)
                             continue;
@@ -264,7 +199,7 @@ namespace EngagedSkyblock.Tiles.TileEntities
             }
 		}
 
-		private void TryDepositToChest(IEnumerable<Item[]> inventories, int itemType, ref int stack, Point extractorWordCoordinates)
+		private void TryDepositToChest(IEnumerable<Item[]> inventories, int itemType, ref int stack)
         {
             if (itemType <= ItemID.None)
                 return;
@@ -305,7 +240,8 @@ namespace EngagedSkyblock.Tiles.TileEntities
 					}
 					
                     if (!deposited) {
-						int number = Item.NewItem(null, extractorWordCoordinates.X, extractorWordCoordinates.Y, 1, 1, item.type, item.stack, noBroadcast: false, -1);
+						Vector2 extractorWordCoordinates = Position.ToWorldCoordinates();
+						int number = Item.NewItem(null, (int)extractorWordCoordinates.X, (int)extractorWordCoordinates.Y, 1, 1, item.type, item.stack, noBroadcast: false, -1);
 
 						if (Main.netMode == NetmodeID.MultiplayerClient) {
 							NetMessage.SendData(MessageID.SyncItem, -1, -1, null, number, 1f);
@@ -318,7 +254,18 @@ namespace EngagedSkyblock.Tiles.TileEntities
                 stack -= itemStack - item.stack;
             }
         }
-    }
+
+		internal void PlaceAutoExtractor(int i, int j, int type) {
+			Chest.AfterPlacement_Hook(i, j, type);
+			if (Main.netMode == NetmodeID.MultiplayerClient) {
+				NetMessage.SendData(MessageID.TileEntityPlacement, number: i, number2: j, number3: Type);
+				return;
+			}
+
+            Point16 topLeft = TilePositionToMultiTileTopLeft(i, j, type);
+			Place(topLeft.X , topLeft.Y);
+		}
+	}
 
     public struct ChestIndicatorInfo
     {
@@ -326,8 +273,7 @@ namespace EngagedSkyblock.Tiles.TileEntities
         public float SlotsPercentFull;
         private static byte FloatToByte(float f) => (byte)(f * byte.MaxValue);
         private static float ByteToFloat(byte b) => b / (float)byte.MaxValue;
-        public static void WriteAndSendChestLocation(int x, int y, float stackPercentFull, float slotsPercentFull)
-        {
+        public static void WriteAndSendChestLocation(int x, int y, float stackPercentFull, float slotsPercentFull) {
             ModPacket packet = EngagedSkyblock.Instance.GetPacket();
             packet.Write((byte)EngagedSkyblock.ModPacketID.ChestIndicatorInfo);
             packet.Write(x);
@@ -336,21 +282,17 @@ namespace EngagedSkyblock.Tiles.TileEntities
             packet.Write(FloatToByte(slotsPercentFull));
             packet.Send();
         }
-        public static void Read(BinaryReader reader)
-        {
+        public static void Read(BinaryReader reader) {
             Point chestLocation = new Point(reader.ReadInt32(), reader.ReadInt32());
             ChestIndicatorInfo info = new ChestIndicatorInfo(reader);
-            if (GlobalChest.ChestPercentFullInfo.ContainsKey(chestLocation))
-            {
+            if (GlobalChest.ChestPercentFullInfo.ContainsKey(chestLocation)) {
                 GlobalChest.ChestPercentFullInfo[chestLocation] = info;
             }
-            else
-            {
+            else {
                 GlobalChest.ChestPercentFullInfo.Add(chestLocation, info);
             }
         }
-        private ChestIndicatorInfo(BinaryReader reader)
-        {
+        private ChestIndicatorInfo(BinaryReader reader) {
             StackPercentFull = ByteToFloat(reader.ReadByte());
             SlotsPercentFull = ByteToFloat(reader.ReadByte());
         }
@@ -359,15 +301,13 @@ namespace EngagedSkyblock.Tiles.TileEntities
     public class GlobalChest : GlobalTile
     {
         private static Asset<Texture2D> chestIndicatorTexture;
-        public override void Load()
-        {
+        public override void Load() {
             chestIndicatorTexture = ModContent.Request<Texture2D>("EngagedSkyblock/Tiles/AutoExtractors/ExtractinatorIndicatorDot");
         }
 
         public static Dictionary<Point, ChestIndicatorInfo> ChestPercentFullInfo = new();
-        public override void PostDraw(int i, int j, int type, SpriteBatch spriteBatch)
-        {
-            if (!AutoExtractor_BaseEntity.ValidTileTypeForStorageChest(type))
+        public override void PostDraw(int i, int j, int type, SpriteBatch spriteBatch) {
+            if (!AutoExtractorTE.ValidTileTypeForStorageChest(type))
                 return;
 
             Tile tile = Main.tile[i, j];
@@ -386,24 +326,22 @@ namespace EngagedSkyblock.Tiles.TileEntities
                 return;
 
             int chestX = i;
-            if (localFrameX == 0)
-            {
+            if (localFrameX == 0) {
                 //Left
                 if (i <= 0)
                     return;
 
                 Tile left = Main.tile[i - 1, j];
-                if (!AutoExtractor_BaseEntity.AutoExtractorTileType(left.TileType))
+                if (!AutoExtractorTE.AutoExtractorTileType(left.TileType))
                     return;
             }
-            else
-            {
+            else {
                 //Right
                 if (i >= Main.maxTilesX - 1)
                     return;
 
                 Tile right = Main.tile[i + 1, j];
-                if (!AutoExtractor_BaseEntity.AutoExtractorTileType(right.TileType))
+                if (!AutoExtractorTE.AutoExtractorTileType(right.TileType))
                     return;
 
                 chestX--;
@@ -424,21 +362,16 @@ namespace EngagedSkyblock.Tiles.TileEntities
             Color slotsColor = GetChestDustColor(slotsPercentFull, 1f);
             spriteBatch.Draw(chestIndicatorTexture.Value, slotsIndicatorPosition - Main.screenPosition + zero, slotsColor);
         }
-        private bool TryGetChestFill(int x, int y, out float stackPercentFull, out float slotsPercentFull)
-        {
-            if (Main.netMode == NetmodeID.MultiplayerClient)
-            {
-                if (ChestPercentFullInfo.TryGetValue(new Point(x, y), out ChestIndicatorInfo info))
-                {
+        private bool TryGetChestFill(int x, int y, out float stackPercentFull, out float slotsPercentFull) {
+            if (Main.netMode == NetmodeID.MultiplayerClient) {
+                if (ChestPercentFullInfo.TryGetValue(new Point(x, y), out ChestIndicatorInfo info)) {
                     stackPercentFull = info.StackPercentFull;
                     slotsPercentFull = info.SlotsPercentFull;
                     return true;
                 }
             }
-            else
-            {
-                if (AutoExtractor_BaseEntity.TryGetChest(x, y, out int chestId))
-                {
+            else {
+                if (AutoExtractorTE.TryGetChest(x, y, out int chestId)) {
                     Chest chest = Main.chest[chestId];
                     Item[] inv = chest.item;
                     inv.PercentFull(out stackPercentFull, out slotsPercentFull);
@@ -450,24 +383,19 @@ namespace EngagedSkyblock.Tiles.TileEntities
             slotsPercentFull = 0f;
             return false;
         }
-        private static Color GetChestDustColor(float percentFull, float alpha)
-        {
+        private static Color GetChestDustColor(float percentFull, float alpha) {
             float red;
             float green;
-            if (percentFull < 0.5f)
-            {
+            if (percentFull < 0.5f) {
                 green = 1f;
                 red = percentFull * 2f;
             }
-            else
-            {
+            else {
                 red = 1f;
-                if (percentFull == 1f)
-                {
+                if (percentFull == 1f) {
                     green = 0f;
                 }
-                else
-                {
+                else {
                     green = 1f - (percentFull - 0.5f) * 1.6f + 0.2f;
                 }
             }

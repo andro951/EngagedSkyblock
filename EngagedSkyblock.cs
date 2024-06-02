@@ -2,12 +2,16 @@ using androLib.Localization;
 using EngagedSkyblock.Common.Globals;
 using EngagedSkyblock.Content.Liquids;
 using EngagedSkyblock.Items;
+using EngagedSkyblock.Items;
+using EngagedSkyblock.Tiles;
 using EngagedSkyblock.Tiles.TileEntities;
 using EngagedSkyblock.Weather;
 using MonoMod.RuntimeDetour;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -20,10 +24,13 @@ namespace EngagedSkyblock
 		private static List<Hook> hooks = new();
 		public override void Load() {
 			Instance = this;
+			AddNonLoadedContent();
+
 			hooks.Add(new(ES_WorldGen.ModLoaderModSystemModifyWorldGenTasks, ES_WorldGen.ModSystem_ModifyWorldGenTasks_Detour));
 			hooks.Add(new(ES_GlobalTile.TileLoaderDrop, ES_GlobalTile.TileLoader_Drop_Detour));
 			hooks.Add(new(ES_WorldGen.ModLoaderModSystemPostWorldGen, ES_WorldGen.ModSystem_PostWorldGen_Detour));
 			hooks.Add(new(LeafBlock.PlantLoaderShakeTree, LeafBlock.PlantLoaderShakeTreeDelegate));
+			hooks.Add(new(GlobalAutoExtractor.OnTileRightClickInfo, GlobalAutoExtractor.TileLoaderRightClickDetour));
 
 			foreach (Hook hook in hooks) {
 				hook.Apply();
@@ -35,6 +42,25 @@ namespace EngagedSkyblock
 			AutoFisher.Load();
 
 			ES_LocalizationData.RegisterSDataPackage();
+		}
+		private void AddNonLoadedContent() {
+			IEnumerable<Type> types = null;
+			try {
+				types = Assembly.GetExecutingAssembly().GetTypes();
+			}
+			catch (ReflectionTypeLoadException e) {
+				types = e.Types.Where(t => t != null);
+			}
+
+			types = types.Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(ES_ModItem)));
+
+			IEnumerable<ModItem> allItems = types.Select(t => Activator.CreateInstance(t)).Where(i => i != null).OfType<ModItem>();
+
+			IEnumerable<ModItem> autoExtractinators = allItems.OfType<AutoExtractinator>().OrderBy(e => e.Tier);
+
+			foreach (ModItem modItem in autoExtractinators) {
+				Instance.AddContent(modItem);
+			}
 		}
 		public enum ModPacketID {
 			RequestWorldSeedFromClient,

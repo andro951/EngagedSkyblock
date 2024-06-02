@@ -1,45 +1,36 @@
 ﻿using Terraria.ModLoader;
-using EngagedSkyblock.Tiles.AutoExtractors;
+using EngagedSkyblock.Tiles;
+using Terraria.ID;
 
 namespace EngagedSkyblock.Tiles.TileEntities
 {
-    public class AutoExtractorTier1Entity : AutoExtractor_BaseEntity
-    {
-        protected override int Timer => 120;
+    public class WoodAutoExtractinatorTE : AutoExtractorTE {
+        protected override int Timer => 600;
         protected override int ConsumeMultiplier => 1;
-        protected override int LootMultiplier => 1;
-        protected override int TileToBeValidOn => ModContent.TileType<AutoExtractorTier1Tile>();
+        protected override int TileToBeValidOn => ModContent.TileType<WoodAutoExtractinatorTile>();
     }
 
-    public class AutoExtractorTier2Entity : AutoExtractor_BaseEntity
-    {
-        protected override int Timer => 90;
+    public class VanillaAutoExtractinatorTE : AutoExtractorTE {
+        protected override int Timer => 60;
         protected override int ConsumeMultiplier => 1;
-        protected override int LootMultiplier => 2;
-        protected override int TileToBeValidOn => ModContent.TileType<AutoExtractorTier2Tile>();
+        protected override int TileToBeValidOn => TileID.Extractinator;
     }
 
-    public class AutoExtractorTier3Entity : AutoExtractor_BaseEntity
-    {
+    public class HellstoneAutoExtractinatorTE : AutoExtractorTE {
         protected override int Timer => 60;
         protected override int ConsumeMultiplier => 2;
-        protected override int LootMultiplier => 3;
-        protected override int TileToBeValidOn => ModContent.TileType<AutoExtractorTier3Tile>();
+        protected override int TileToBeValidOn => ModContent.TileType<HellstoneAutoExtractinatorTile>();
     }
 
-    public class AutoExtractorTier4Entity : AutoExtractor_BaseEntity
-    {
-        protected override int Timer => 30;
-        protected override int ConsumeMultiplier => 2;
-        protected override int LootMultiplier => 4;
-        protected override int TileToBeValidOn => ModContent.TileType<AutoExtractorTier4Tile>();
+    public class ChlorophyteAutoExtractinatorTE : AutoExtractorTE {
+        protected override int Timer => 60;
+        protected override int ConsumeMultiplier => 4;
+        protected override int TileToBeValidOn => TileID.ChlorophyteExtractinator;
     }
 
-    public class AutoExtractorTier5Entity : AutoExtractor_BaseEntity
-    {
-        protected override int Timer => 20;
-        protected override int ConsumeMultiplier => 3;
-        protected override int LootMultiplier => 8;
-        protected override int TileToBeValidOn => ModContent.TileType<AutoExtractorTier5Tile>();
+    public class LuminiteAutoExtractinatorTE : AutoExtractorTE {
+        protected override int Timer => 60;
+        protected override int ConsumeMultiplier => 10;
+        protected override int TileToBeValidOn => ModContent.TileType<LuminiteAutoExtractinatorTile>();
     }
 }
