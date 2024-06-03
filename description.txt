@@ -66,8 +66,6 @@ Engaged Features
 			Every basic dye color has an associated dungeon brick recipe (even if the colors match poorly)
 		Unsafe Dungeon Walls [i:5365] [i:5371] [i:5368]: Heavy Workbench [i:2172] 1 Dungeon Brick [i:134] [i:137] [i:139] after Skeletron is defeated.
 		Lihzahrd Brick [i:1101]: [Hellforge] 40 Clay Block [i:133] + 10 Gold/Platinum Bar [i:19]/[i:706]
-		Extractinator [i:997]: [Anvil] 20 Iron/Lead bar [i:22]/[i:704] + Wood Auto Extractinator
-		Chlorophyte Extractinator [i:5296]: [Mythril Anvil] 20 Chlorophyte Bar [i:1006] + Hellstone Auto Extractinator
 
 	-NPC drops
 		Slimes: Acorns [i:27] (5%), Grass Seeds [i:62] (2%), Jungle Grass Seeds [i:195] (2%)
@@ -77,17 +75,6 @@ Engaged Features
 			-World Spawn pont: "Spawn"  (Requires a tile that you can stand under the left side of the sign and no solid tiles or liquids in the 2x3 space above the floor)
 			-Dungeon (Old Man and Lunatic Cultist spawn point): "Dungeon" (Requires a dungeon tile brick under the left side of the sign, no solid tile 7 tiles above 
 				the dungeon brick, and 10 solid blocks on either side of the brick for spawning the cultists)
-	-Block Breakers
-		Break the block they are facing repeatedly. (2 red dots are the side they will break a block on.)
-		Higher tier block breakers have a higher pickaxe power and attempt to break block faster.
-		If wire is placed on them, they will only activate when the wire is on.
-		Left clicking them with a hammer will rotate them.
-
-	-Block Placers
-		Place blocks from a chest they are touching in front of them.  Facing direction same as Block Breakers.
-		Higher tier block placers place blocks more often.
-		If wire is placed on them, they will only activate when the wire is on.
-		Left clicking them with a hammer will rotate them.
 
 Progression Tips
 	-Liquids can be duplicated if done correctly.  (3:30 - https://www.youtube.com/watch?v=CLBMZyBfQXE)

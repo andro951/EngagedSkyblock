@@ -16,7 +16,7 @@ using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 using static EngagedSkyblock.Common.Globals.ES_GlobalTile;
-using static EngagedSkyblock.EngagedSkyblock;
+using static EngagedSkyblock.ES_Mod;
 
 namespace EngagedSkyblock.Common.Globals
 {
@@ -84,8 +84,8 @@ namespace EngagedSkyblock.Common.Globals
 			}
 		}
 		private static void SendHitBlockPacket(int x, int y, int playerWhoAmI) {
-			ModPacket modPacket = EngagedSkyblock.Instance.GetPacket();
-			modPacket.Write((byte)ModPacketID.HitTile);
+			ModPacket modPacket = ES_Mod.Instance.GetPacket();
+			modPacket.Write((byte)ES_ModPacketID.HitTile);
 			modPacket.Write(x);
 			modPacket.Write(y);
 			modPacket.Write(playerWhoAmI);
@@ -154,38 +154,9 @@ namespace EngagedSkyblock.Common.Globals
 		}
 
 		public static void PlaceTile(int i, int j, int tileToPlace, bool growDust = true) {
-			if (!WorldGen.PlaceTile(i, j, tileToPlace, true, true)) {
-				Tile tile = Main.tile[i, j];
-				switch (tileToPlace) {
-					case TileID.Grass:
-					case TileID.CorruptGrass:
-					case TileID.CrimsonGrass:
-					case TileID.HallowedGrass:
-						tile.HasTile = true;
-						tile.TileType = TileID.Dirt;
-						break;
-					case TileID.JungleGrass:
-					case TileID.CorruptJungleGrass:
-					case TileID.CrimsonJungleGrass:
-					case TileID.MushroomGrass:
-						tile.HasTile = true;
-						tile.TileType = TileID.Mud;
-						break;
-					case TileID.AshGrass:
-						tile.HasTile = true;
-						tile.TileType = TileID.Ash;
-						break;
-				}
-
-				WorldGen.PlaceTile(i, j, tileToPlace, true, true);
-			}
-
+			AndroUtilityMethods.PlaceTile(i, j, tileToPlace);
 			if (growDust)
 				ES_ModPlayer.GrowDust(new Point(i, j));
-			
-			WorldGen.SquareTileFrame(i, j);
-			if (Main.netMode == NetmodeID.Server)
-				NetMessage.SendTileSquare(-1, i - 1, j - 1, 3);
 		}
 
 		#endregion

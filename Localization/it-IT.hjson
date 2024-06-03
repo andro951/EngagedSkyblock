@@ -2,6 +2,352 @@
 Mods: {
 	EngagedSkyblock: {
 		Items: {
+			AdamantiteBlockBreaker: {
+				DisplayName: Adamantite Block Breaker
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Pickaxe Power: 180
+					Cooldown: 0.33 seconds
+					Can be used to break blocks that require Adamantite Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			AdamantiteBlockPlacer: {
+				DisplayName: Adamantite Block Placer
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Cooldown: 0.33 seconds
+					Can be used to break blocks that require Adamantite Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			ChlorophyteBlockBreaker: {
+				DisplayName: Chlorophyte Block Breaker
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Pickaxe Power: 200
+					Cooldown: 0.06 seconds
+					Can be used to break blocks that require Chlorophyte Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			ChlorophyteBlockPlacer: {
+				DisplayName: Chlorophyte Block Placer
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Cooldown: 0.06 seconds
+					Can be used to break blocks that require Chlorophyte Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			CobaltBlockBreaker: {
+				DisplayName: Cobalt Block Breaker
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Pickaxe Power: 110
+					Cooldown: 0.67 seconds
+					Can be used to break blocks that require Cobalt Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			CobaltBlockPlacer: {
+				DisplayName: Cobalt Block Placer
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Cooldown: 0.67 seconds
+					Can be used to break blocks that require Cobalt Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			CopperBlockBreaker: {
+				DisplayName: Copper Block Breaker
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Pickaxe Power: 35
+					Cooldown: 6 seconds
+					Can be used to break blocks that require Copper Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			CopperBlockPlacer: {
+				DisplayName: Copper Block Placer
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Cooldown: 6 seconds
+					Can be used to break blocks that require Copper Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			CrimsonAltar: {
+				DisplayName: Crimson Altar
+				Tooltip: Works the same as vanilla Demon Altar except is craftable.
+			}
+
+			CrimtaneBlockBreaker: {
+				DisplayName: Crimtane Block Breaker
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Pickaxe Power: 70
+					Cooldown: 0.9 seconds
+					Can be used to break blocks that require Crimtane Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			CrimtaneBlockPlacer: {
+				DisplayName: Crimtane Block Placer
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Cooldown: 0.9 seconds
+					Can be used to break blocks that require Crimtane Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			DemonAltar: {
+				DisplayName: Demon Altar
+				Tooltip: Works the same as vanilla Crimson Altar except is craftable.
+			}
+
+			DemoniteBlockBreaker: {
+				DisplayName: Demonite Block Breaker
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Pickaxe Power: 65
+					Cooldown: 1 seconds
+					Can be used to break blocks that require Demonite Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			DemoniteBlockPlacer: {
+				DisplayName: Demonite Block Placer
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Cooldown: 1 seconds
+					Can be used to break blocks that require Demonite Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			GoldBlockBreaker: {
+				DisplayName: Gold Block Breaker
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Pickaxe Power: 55
+					Cooldown: 2 seconds
+					Can be used to break blocks that require Gold Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			GoldBlockPlacer: {
+				DisplayName: Gold Block Placer
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Cooldown: 2 seconds
+					Can be used to break blocks that require Gold Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			HellstoneBlockBreaker: {
+				DisplayName: Hellstone Block Breaker
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Pickaxe Power: 100
+					Cooldown: 1 seconds
+					Can be used to break blocks that require Hellstone Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			HellstoneBlockPlacer: {
+				DisplayName: Hellstone Block Placer
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Cooldown: 1 seconds
+					Can be used to break blocks that require Hellstone Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			IronBlockBreaker: {
+				DisplayName: Iron Block Breaker
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Pickaxe Power: 40
+					Cooldown: 4 seconds
+					Can be used to break blocks that require Iron Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			IronBlockPlacer: {
+				DisplayName: Iron Block Placer
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Cooldown: 4 seconds
+					Can be used to break blocks that require Iron Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			LeadBlockBreaker: {
+				DisplayName: Lead Block Breaker
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Pickaxe Power: 40
+					Cooldown: 3.6 seconds
+					Can be used to break blocks that require Lead Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			LeadBlockPlacer: {
+				DisplayName: Lead Block Placer
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Cooldown: 3.6 seconds
+					Can be used to break blocks that require Lead Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			LuminiteBlockBreaker: {
+				DisplayName: Luminite Block Breaker
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Pickaxe Power: 225
+					Cooldown: 0.01 seconds
+					Can be used to break blocks that require Luminite Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			LuminiteBlockPlacer: {
+				DisplayName: Luminite Block Placer
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Cooldown: 0.01 seconds
+					Can be used to break blocks that require Luminite Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			MeteoriteBlockBreaker: {
+				DisplayName: Meteorite Block Breaker
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Pickaxe Power: 59
+					Cooldown: 1.5 seconds
+					Can be used to break blocks that require Meteorite Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			MeteoriteBlockPlacer: {
+				DisplayName: Meteorite Block Placer
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Cooldown: 1.5 seconds
+					Can be used to break blocks that require Meteorite Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			MythrilBlockBreaker: {
+				DisplayName: Mythril Block Breaker
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Pickaxe Power: 150
+					Cooldown: 0.5 seconds
+					Can be used to break blocks that require Mythril Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			MythrilBlockPlacer: {
+				DisplayName: Mythril Block Placer
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Cooldown: 0.5 seconds
+					Can be used to break blocks that require Mythril Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			OrichalcumBlockBreaker: {
+				DisplayName: Orichalcum Block Breaker
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Pickaxe Power: 165
+					Cooldown: 0.45 seconds
+					Can be used to break blocks that require Orichalcum Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			OrichalcumBlockPlacer: {
+				DisplayName: Orichalcum Block Placer
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Cooldown: 0.45 seconds
+					Can be used to break blocks that require Orichalcum Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			PalladiumBlockBreaker: {
+				DisplayName: Palladium Block Breaker
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Pickaxe Power: 130
+					Cooldown: 0.6 seconds
+					Can be used to break blocks that require Palladium Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			PalladiumBlockPlacer: {
+				DisplayName: Palladium Block Placer
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Cooldown: 0.6 seconds
+					Can be used to break blocks that require Palladium Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			PlatinumBlockBreaker: {
+				DisplayName: Platinum Block Breaker
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Pickaxe Power: 130
+					Cooldown: 1.8 seconds
+					Can be used to break blocks that require Platinum Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			PlatinumBlockPlacer: {
+				DisplayName: Platinum Block Placer
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Cooldown: 1.8 seconds
+					Can be used to break blocks that require Platinum Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
 			RainTotem: {
 				DisplayName: Rain Totem
 				Tooltip:
@@ -12,31 +358,221 @@ Mods: {
 					'''
 			}
 
+			SilverBlockBreaker: {
+				DisplayName: Silver Block Breaker
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Pickaxe Power: 45
+					Cooldown: 3 seconds
+					Can be used to break blocks that require Silver Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			SilverBlockPlacer: {
+				DisplayName: Silver Block Placer
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Cooldown: 3 seconds
+					Can be used to break blocks that require Silver Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			TinBlockBreaker: {
+				DisplayName: Tin Block Breaker
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Pickaxe Power: 35
+					Cooldown: 5.4 seconds
+					Can be used to break blocks that require Tin Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			TinBlockPlacer: {
+				DisplayName: Tin Block Placer
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Cooldown: 5.4 seconds
+					Can be used to break blocks that require Tin Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			TitaniumBlockBreaker: {
+				DisplayName: Titanium Block Breaker
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Pickaxe Power: 190
+					Cooldown: 0.3 seconds
+					Can be used to break blocks that require Titanium Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			TitaniumBlockPlacer: {
+				DisplayName: Titanium Block Placer
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Cooldown: 0.3 seconds
+					Can be used to break blocks that require Titanium Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			TungstenBlockBreaker: {
+				DisplayName: Tungsten Block Breaker
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Pickaxe Power: 50
+					Cooldown: 2.7 seconds
+					Can be used to break blocks that require Tungsten Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			TungstenBlockPlacer: {
+				DisplayName: Tungsten Block Placer
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Cooldown: 2.7 seconds
+					Can be used to break blocks that require Tungsten Bar to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			WoodBlockBreaker: {
+				DisplayName: Wood Block Breaker
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Pickaxe Power: 1
+					Cooldown: 10 seconds
+					Can be used to break blocks that require Wood to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
+			WoodBlockPlacer: {
+				DisplayName: Wood Block Placer
+				Tooltip:
+					'''
+					Breaks blocks that is points to when receiving a wiring signal.
+					Cooldown: 10 seconds
+					Can be used to break blocks that require Wood to break.If wire is placed on this block, it will only try to mine each time it receives a wiring signal.
+					'''
+			}
+
 			WoodChips: {
 				DisplayName: Trucioli di legno
 				Tooltip:
 					'''
-					Fai clic con il tasto destro per rompere i trucioli di legno e vedere cosa puoi trovare.
-					25% di possibilità di eliminare bug.
-					10% di possibilità di rilasciare ghiande.
+					Right click to break apart the Wood Chips to see what you can find.
+					10% chance to drop bugs.
+					25% chance to drop acorns.
 					'''
 			}
 
-			CrimsonAltar: {
-				// DisplayName: Crimson Altar
+			AutoExtractor: {
+				// DisplayName: Auto Extractor
 				// Tooltip: ""
 			}
 
-			DemonAltar: {
-				// DisplayName: Demon Altar
+			AutoExtractorTier2: {
+				// DisplayName: Auto Extractor Tier2
+				// Tooltip: ""
+			}
+
+			AutoExtractorTier3: {
+				// DisplayName: Auto Extractor Tier3
+				// Tooltip: ""
+			}
+
+			AutoExtractorTier4: {
+				// DisplayName: Auto Extractor Tier4
+				// Tooltip: ""
+			}
+
+			AutoExtractorTier5: {
+				// DisplayName: Auto Extractor Tier5
+				// Tooltip: ""
+			}
+
+			LeafBlock: {
+				// DisplayName: Leaf Block
+				// Tooltip: ""
+			}
+
+			WoodAutoExtractinator: {
+				// DisplayName: Wood Auto Extractinator
+				// Tooltip: ""
+			}
+
+			HellstoneAutoExtractinator: {
+				// DisplayName: Hellstone Auto Extractinator
+				// Tooltip: ""
+			}
+
+			LuminiteAutoExtractinator: {
+				// DisplayName: Luminite Auto Extractinator
 				// Tooltip: ""
 			}
 		}
 
 		Tiles: {
-			// RainTotem.MapEntry: Rain Totem
+			// AdamantiteBlockBreaker.MapEntry: Adamantite Block Breaker
+			// AdamantiteBlockPlacer.MapEntry: Adamantite Block Placer
+			// AutoExtractorTier1Tile.MapEntry: Auto Extractor Tier1 Tile
+			// AutoExtractorTier2Tile.MapEntry: Auto Extractor Tier2 Tile
+			// AutoExtractorTier3Tile.MapEntry: Auto Extractor Tier3 Tile
+			// AutoExtractorTier4Tile.MapEntry: Auto Extractor Tier4 Tile
+			// AutoExtractorTier5Tile.MapEntry: Auto Extractor Tier5 Tile
+			// ChlorophyteBlockBreaker.MapEntry: Chlorophyte Block Breaker
+			// ChlorophyteBlockPlacer.MapEntry: Chlorophyte Block Placer
+			// CobaltBlockBreaker.MapEntry: Cobalt Block Breaker
+			// CobaltBlockPlacer.MapEntry: Cobalt Block Placer
+			// CopperBlockBreaker.MapEntry: Copper Block Breaker
+			// CopperBlockPlacer.MapEntry: Copper Block Placer
 			// CrimsonAltar.MapEntry: Crimson Altar
+			// CrimtaneBlockBreaker.MapEntry: Crimtane Block Breaker
+			// CrimtaneBlockPlacer.MapEntry: Crimtane Block Placer
 			// DemonAltar.MapEntry: Demon Altar
+			// DemoniteBlockBreaker.MapEntry: Demonite Block Breaker
+			// DemoniteBlockPlacer.MapEntry: Demonite Block Placer
+			// GoldBlockBreaker.MapEntry: Gold Block Breaker
+			// GoldBlockPlacer.MapEntry: Gold Block Placer
+			// HellstoneBlockBreaker.MapEntry: Hellstone Block Breaker
+			// HellstoneBlockPlacer.MapEntry: Hellstone Block Placer
+			// IronBlockBreaker.MapEntry: Iron Block Breaker
+			// IronBlockPlacer.MapEntry: Iron Block Placer
+			// LeadBlockBreaker.MapEntry: Lead Block Breaker
+			// LeadBlockPlacer.MapEntry: Lead Block Placer
+			// LuminiteBlockBreaker.MapEntry: Luminite Block Breaker
+			// LuminiteBlockPlacer.MapEntry: Luminite Block Placer
+			// MeteoriteBlockBreaker.MapEntry: Meteorite Block Breaker
+			// MeteoriteBlockPlacer.MapEntry: Meteorite Block Placer
+			// MythrilBlockBreaker.MapEntry: Mythril Block Breaker
+			// MythrilBlockPlacer.MapEntry: Mythril Block Placer
+			// OrichalcumBlockBreaker.MapEntry: Orichalcum Block Breaker
+			// OrichalcumBlockPlacer.MapEntry: Orichalcum Block Placer
+			// PalladiumBlockBreaker.MapEntry: Palladium Block Breaker
+			// PalladiumBlockPlacer.MapEntry: Palladium Block Placer
+			// PlatinumBlockBreaker.MapEntry: Platinum Block Breaker
+			// PlatinumBlockPlacer.MapEntry: Platinum Block Placer
+			// RainTotem.MapEntry: Rain Totem
+			// SilverBlockBreaker.MapEntry: Silver Block Breaker
+			// SilverBlockPlacer.MapEntry: Silver Block Placer
+			// TinBlockBreaker.MapEntry: Tin Block Breaker
+			// TinBlockPlacer.MapEntry: Tin Block Placer
+			// TitaniumBlockBreaker.MapEntry: Titanium Block Breaker
+			// TitaniumBlockPlacer.MapEntry: Titanium Block Placer
+			// TungstenBlockBreaker.MapEntry: Tungsten Block Breaker
+			// TungstenBlockPlacer.MapEntry: Tungsten Block Placer
+			// WoodBlockBreaker.MapEntry: Wood Block Breaker
+			// WoodBlockPlacer.MapEntry: Wood Block Placer
+			// HellstoneAutoExtractinatorTile.MapEntry: Hellstone Auto Extractinator Tile
+			// LuminiteAutoExtractinatorTile.MapEntry: Luminite Auto Extractinator Tile
+			// WoodAutoExtractinatorTile.MapEntry: Wood Auto Extractinator Tile
 		}
 
 		// Projectiles.SnowFlake.DisplayName: Snow Flake

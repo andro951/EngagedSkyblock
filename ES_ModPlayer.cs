@@ -2,34 +2,16 @@
 using EngagedSkyblock.Common.Globals;
 using EngagedSkyblock.Content;
 using EngagedSkyblock.Content.Dusts;
-using EngagedSkyblock.Items;
-using EngagedSkyblock.Tiles.TileEntities;
-using EngagedSkyblock.Weather;
-using KokoLib;
-using Microsoft.VisualBasic;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using MonoMod.RuntimeDetour;
-using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Terraria;
-using Terraria.Audio;
 using Terraria.DataStructures;
-using Terraria.GameContent;
-using Terraria.GameContent.Tile_Entities;
 using Terraria.ID;
-using Terraria.Localization;
 using Terraria.ModLoader;
-using Terraria.ModLoader.IO;
-using Terraria.ObjectData;
-using Terraria.UI;
 
 namespace EngagedSkyblock {
 	public class ES_ModPlayer : ModPlayer {

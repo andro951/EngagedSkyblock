@@ -22,7 +22,7 @@ namespace androLib.Localization
 			if (Main.netMode == NetmodeID.Server)
 				return;
 
-			AndroLogModSystem.RegisterModLocalizationSDataPackage(new(ModContent.GetInstance<EngagedSkyblock.EngagedSkyblock>, () => AllData, () => ChangedData, () => RenamedKeys, () => RenamedFullKeys, () => SameAsEnglish));
+			AndroLogModSystem.RegisterModLocalizationSDataPackage(new(ModContent.GetInstance<EngagedSkyblock.ES_Mod>, () => AllData, () => ChangedData, () => RenamedKeys, () => RenamedFullKeys, () => SameAsEnglish));
 		}
 
 		private static SortedDictionary<string, SData> allData;

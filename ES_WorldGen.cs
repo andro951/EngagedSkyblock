@@ -25,9 +25,12 @@ using static tModPorter.ProgressUpdate;
 using androLib.Common.Utility;
 using KokoLib;
 using System.Threading;
-using static EngagedSkyblock.EngagedSkyblock;
+using static EngagedSkyblock.ES_Mod;
 using EngagedSkyblock.Common.Globals;
 using Microsoft.Xna.Framework;
+using EngagedSkyblock.Content;
+using Terraria.GameContent.Events;
+using Terraria.DataStructures;
 
 namespace EngagedSkyblock {
 	public static class ES_WorldGen {
@@ -38,15 +41,17 @@ namespace EngagedSkyblock {
 			MoveSpawnPass.AddPass();
 			ClearEverythingPass.AddPass();
 			SkyblockPass.AddPass();
+			SpawnManager.Load();
 		}
 
 		#region Seeds
 
 		public static bool SkyblockWorld => skyblockWorld || testingInNormalWorld;
+		private static bool WorldHasSkyblockSeed => skyblockWorld;
 		private static bool skyblockWorld = true;
 		public static void SetSkyblockWorld(bool value) => skyblockWorld = value;
 		public static bool CheckSkyblockSeed() => IsSkyblockSeed(Main.netMode == NetmodeID.Server ? Main.ActiveWorldFileData.SeedText : WorldGen.currentWorldSeed);
-		public static bool testingInNormalWorld => false && Debugger.IsAttached;
+		public static bool testingInNormalWorld => true && Debugger.IsAttached;
 		public const string SkyblockSeedString = "skyblock";
 		public static int SkyblockSeed {
 			get {
@@ -96,9 +101,8 @@ namespace EngagedSkyblock {
 			}
 		}
 		public static void RequestSeedFromServer() {
-			ModPacket modPacket = EngagedSkyblock.Instance.GetPacket();
-			modPacket.Write((byte)ModPacketID.RequestWorldSeedFromClient);
-			modPacket.Write(Main.myPlayer);
+			ModPacket modPacket = ES_Mod.Instance.GetPacket();
+			modPacket.Write((byte)ES_ModPacketID.RequestWorldSeedFromServer);
 			modPacket.Send();
 		}
 		internal static void RecieveWorldSeed(string seed) {
@@ -126,15 +130,19 @@ namespace EngagedSkyblock {
 			PostWorldGenDetour();
 		}
 		private static void PostWorldGenDetour() {
-			if (!SkyblockWorld)
+			if (!WorldHasSkyblockSeed)
 				return;
 
 			//If spawn point changed, another mod probably did something in PostWorldGen(), so recreate the skyblock.
-			if (MoveSpawnPass.SpawnChanged()) {
-				foreach (var pass in skyblockGenPasses) {
-					pass.Value.Apply(null, null);
-				}
+			foreach (var pass in skyblockGenPasses) {
+				pass.Value.Apply(null, null);
 			}
+
+			//if (MoveSpawnPass.SpawnChanged()) {
+			//	foreach (var pass in skyblockGenPasses) {
+			//		pass.Value.Apply(null, null);
+			//	}
+			//}
 		}
 
 		private static void On_WorldGen_UpdateWorld_Inner(On_WorldGen.orig_UpdateWorld_Inner orig) {
@@ -188,50 +196,56 @@ namespace EngagedSkyblock {
 		}
 
 		internal static void ModifyWorldGenTasks(List<GenPass> tasks, ref double totalWeight) {
-			if (IsSkyblockSeed(WorldGen.currentWorldSeed)) {
-				Action postActions = null;
-				bool spawnPointFound = false;
-				bool insertedSpawnPoint = false;
-				bool passedGrassWall = false;
-				for (int i = 0; i < tasks.Count; i++) {
-					GenPass pass = tasks[i];
+			//if (IsSkyblockSeed(WorldGen.currentWorldSeed)) {
+			//	Action postActions = null;
+			//	bool spawnPointFound = false;
+			//	bool insertedSpawnPoint = false;
+			//	bool passedGrassWall = false;
+			//	for (int i = 0; i < tasks.Count; i++) {
+			//		GenPass pass = tasks[i];
 					
-					if (!insertedSpawnPoint) {
-						if (!spawnPointFound && pass.Name == "Spawn Point") {
-							if (true || passedGrassWall) {
-								tasks.Insert(++i, new MoveSpawnPass());
-								insertedSpawnPoint = true;
-							}
+			//		if (!insertedSpawnPoint) {
+			//			if (!spawnPointFound && pass.Name == "Spawn Point") {
+			//				if (true || passedGrassWall) {
+			//					tasks.Insert(++i, new MoveSpawnPass());
+			//					insertedSpawnPoint = true;
+			//				}
 
-							spawnPointFound = true;
-						}
+			//				spawnPointFound = true;
+			//			}
 
-						if (!passedGrassWall && pass.Name == "Grass Wall") {
-							if (spawnPointFound) {
-								tasks.Insert(i++, new MoveSpawnPass());
-								insertedSpawnPoint = true;
-							}
+			//			if (!passedGrassWall && pass.Name == "Grass Wall") {
+			//				if (spawnPointFound) {
+			//					tasks.Insert(i++, new MoveSpawnPass());
+			//					insertedSpawnPoint = true;
+			//				}
 
-							passedGrassWall = true;
-						}
-					}
-				}
+			//				passedGrassWall = true;
+			//			}
+			//		}
+			//	}
 
-				postActions?.Invoke();
-				totalWeight = tasks.Sum(x => x.Weight);
-			}
+			//	postActions?.Invoke();
+			//	totalWeight = tasks.Sum(x => x.Weight);
+			//}
 		}
 		public class MoveSpawnPass : GenPass {
 			public MoveSpawnPass() : base("Move Spawn to Skyblock Spawn", 1) { }
 			private static int spawnX;
 			private static int spawnY;
-			public static bool SpawnChanged() => spawnX != Main.spawnTileX || spawnY != Main.spawnTileY;
+			private static double worldSurface;
+			public static bool SpawnChanged() => spawnX != Main.spawnTileX || spawnY != Main.spawnTileY || worldSurface != Main.worldSurface;
 			protected override void ApplyPass(GenerationProgress progress, GameConfiguration configuration) {
 				if (progress != null)
 					progress.Message = "Moving Spawn to Skyblock Spawn";
 
-				Main.spawnTileX = Main.maxTilesX / 2 - 5;
-				Main.spawnTileY = (int)Main.worldSurface - 55;
+				//Main.spawnTileX = Main.maxTilesX / 2 - 5;
+				//Main.spawnTileY = (int)Main.worldSurface - 55;
+				Main.spawnTileX = Main.maxTilesX / 2;
+				Main.spawnTileY = (int)(Main.worldSurface - 5);
+				spawnX = Main.spawnTileX;
+				spawnY = Main.spawnTileY;
+				worldSurface = Main.worldSurface;
 
 				Vector2 npcSapwn = new Point(Main.spawnTileX, Main.spawnTileY - 2).ToWorldCoordinates();
 				foreach (NPC npc in Main.npc) {
@@ -462,6 +476,10 @@ namespace EngagedSkyblock {
 			GetWorldSeed();
 			if (Main.netMode != NetmodeID.MultiplayerClient)
 				PostSeedSetup();
+
+			if (SkyblockWorld) {
+				OnWorldLoadCheckForPlayerMadeStructures();
+			}
 		}
 		private static void PostSeedSetup() {
 			ES_ModSystem.SwitchDisabledRecipes();
@@ -542,7 +560,7 @@ namespace EngagedSkyblock {
 				PathDirectionID.GetDirection(directionID, out int x, out int y);
 
 				Tile tile = Main.tile[point.X + x, point.Y + y];
-				if (!tile.HasTile || tile.TileType != TileID.Mud && tile.TileType != TileID.JungleGrass && tile.TileType != TileID.ClayBlock) {
+				if (!tile.HasTile || tile.TileType != TileID.Mud && tile.TileType != TileID.JungleGrass) {
 					if (3 - directionID < requiredAdjacent - adjacent)
 						return false;
 
@@ -557,5 +575,124 @@ namespace EngagedSkyblock {
 
 			return false;
 		}
+
+		#region Player Made Structure Detection
+
+		//Include status and location of recognized structures in the book
+
+		public static bool DungeonExists { get; private set; } = false;
+		//Dungeon needs 250 tiles (Doesn't count unsafe walls) and player below world surface and an unsafe dungeon wall is directly behind the player.
+		//Put this info in book and Status of Main.localPlayer.ZoneDungeon
+		private static void OnWorldLoadCheckForPlayerMadeStructures() {
+			DungeonExists = CheckIfValidDungeon(Main.dungeonX, Main.dungeonY);
+		}
+		private static bool DungeonBrick(int type) => type == TileID.BlueDungeonBrick || type == TileID.GreenDungeonBrick || type == TileID.PinkDungeonBrick;
+		private static bool CheckIfValidDungeon(int x, int y) {
+			if (x <= 0 || y <= 0)
+				return false;
+
+			Tile tile = Main.tile[x, y];
+			if (!tile.HasTile)
+				return false;
+
+			if (!DungeonBrick(tile.TileType))
+				return false;
+
+			if (y < 7 || WorldGen.SolidTile(Main.tile[x, y - 7]))
+				return false;
+
+			Vector2 center = new Vector2(x * 16 + 8, y * 16 - 64 - 8 - 27);
+			if (!CultistRitual.CheckFloor(center, out _))
+				return false;
+
+			return true;
+		}
+
+		private static bool CheckSign(int x, int y, Func<string, int, int, string> checkSign) {
+			int signNum = Sign.ReadSign(x, y);
+			if (signNum >= 0) {
+				Sign sign = Main.sign[signNum];
+				int checkX = sign.x;
+				int checkY = sign.y + 2;
+				string newText = checkSign(sign.text, checkX, checkY);
+				if (newText != null) {
+					Sign.TextSign(signNum, newText);
+					if (!Main.gameMenu)
+						Main.NewText(newText);
+
+					return true;
+				}
+			}
+
+			return false;
+		}
+		private static string CheckSignDungeon(string text, int x, int y) {
+			if (text.StartsWith("Dungeon")) {
+				if (Main.dungeonX != x || Main.dungeonY != y) {
+					if (CheckIfValidDungeon(x, y)) {
+						DungeonExists = true;
+						Main.dungeonX = x;
+						Main.dungeonY = y;
+						return $"Dungeon Set ({x}, {y})";
+					}
+					else {
+						return $"Dungeon area not suitable";
+					}
+				}
+			}
+
+			return null;
+		}
+		private static string CheckSignSpawn(string text, int x, int y) {
+			if (text.StartsWith("Spawn")) {
+				Point16 floorPoint = new Point16(x, y);
+				Point16 spawnPoint = floorPoint;//.FloorPointToSpawnPoint();
+				if (Main.spawnTileX != spawnPoint.X || Main.spawnTileY != spawnPoint.Y) {
+					if (ES_ModPlayer.ValidSpawnPoint(spawnPoint)) {
+						Main.spawnTileX = spawnPoint.X;
+						Main.spawnTileY = spawnPoint.Y;
+						return $"Spawn Set ({spawnPoint.X}, {spawnPoint.Y})";
+					}
+					else {
+						return $"Spawn point Invalid";
+					}
+				}
+			}
+
+			return null;
+		}
+		public  static void TileRandomUpdate(int x, int y, int type) {
+			if (type == TileID.Signs) {
+				if (CheckSign(x, y, CheckSignDungeon))
+					goto EndOfSIgnChecks;
+
+				if (CheckSign(x, y, CheckSignSpawn))
+					goto EndOfSIgnChecks;
+
+			}
+
+		EndOfSIgnChecks:
+
+			if (DungeonExists) {
+				if (x == Main.dungeonX && y == Main.dungeonY) {
+					if (!CheckIfValidDungeon(x, y)) {
+						DungeonExists = false;
+						Main.dungeonX = 0;
+						Main.dungeonY = 0;
+					}
+				}
+			}
+			else {
+				if (CheckIfValidDungeon(x, y)) {
+					DungeonExists = true;
+					Main.dungeonX = x;
+					Main.dungeonY = y;
+					if (!Main.gameMenu)
+						$"Dungeon Set ({x}, {y})".NT();
+				}
+			}
+		}
+
+		#endregion
 	}
 }

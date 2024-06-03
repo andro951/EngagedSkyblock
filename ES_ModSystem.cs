@@ -22,7 +22,7 @@ using EngagedSkyblock.Content;
 using EngagedSkyblock.Content.Liquids;
 using EngagedSkyblock.Tiles;
 using EngagedSkyblock.Items;
-using static EngagedSkyblock.Tiles.ExtractionItem;
+using TerrariaAutomations.Tiles;
 
 namespace EngagedSkyblock
 {
@@ -44,10 +44,9 @@ namespace EngagedSkyblock
 		}
 		private static SortedDictionary<int, SortedSet<int>> allItemDrops = null;
 		public override void PostSetupContent() {
-			ExtractionItem.PostSetupContent();
-			ExtractTypeSet.PostSetupContent();
-			GlobalAutoExtractor.PostSetupContent();
+			ExtractionManager.PostSetupContent();
 		}
+
 		private static void SetupAllItemDrops() {
 			allItemDrops = new();
 			foreach (KeyValuePair<int, NPC> npcPair in ContentSamples.NpcsByNetId) {
@@ -80,11 +79,6 @@ namespace EngagedSkyblock
 		public override void AddRecipes() {
 			for (int i = 0; i < AndroMod.VanillaRecipeCount; i++) {
 				Recipe recipe = Main.recipe[i];
-				if (recipe.createItem.type == ItemID.ChlorophyteExtractinator) {
-					recipe.DisableRecipe();
-					disabledRecipes.Add(recipe.createItem.type);
-				}
-
 				if (!IsActivatableStatue(recipe.createItem))
 					continue;
 
@@ -182,9 +176,6 @@ namespace EngagedSkyblock
 			Recipe.Create(ItemID.DartTrap).AddTile(TileID.HeavyWorkBench).AddIngredient(ItemID.StoneBlock, 100).Register();
 			Recipe.Create(ItemID.GeyserTrap).AddTile(TileID.HeavyWorkBench).AddIngredient(ItemID.StoneBlock, 100).Register();
 			Recipe.Create(ItemID.Spike).AddTile(TileID.HeavyWorkBench).AddIngredient(ItemID.StoneBlock, 10).Register();
-
-			Recipe.Create(ItemID.Extractinator).AddTile(TileID.Anvils).AddIngredient(ModContent.ItemType<WoodAutoExtractinator>()).AddRecipeGroup($"{AndroMod.ModName}:{AndroModSystem.AnyIronBar}", 20).Register();
-			Recipe.Create(ItemID.ChlorophyteExtractinator).AddTile(TileID.MythrilAnvil).AddIngredient(ModContent.ItemType<HellstoneAutoExtractinator>()).AddIngredient(ItemID.ChlorophyteBar, 20).Register();
 		}
 		public static bool IsActivatableStatue(Item item) => !item.NullOrAir() && item.createTile == TileID.Statues || item.createTile == TileID.MushroomStatue || item.createTile == TileID.BoulderStatue;
 		public static void SwitchDisabledRecipes() {
@@ -198,7 +189,7 @@ namespace EngagedSkyblock
 					continue;
 
 
-				if (recipe.Mod == null || recipe.Mod.Name != EngagedSkyblock.ModName) {
+				if (recipe.Mod == null || recipe.Mod.Name != ES_Mod.ModName) {
 					if (skyblockWorld) {
 						if (recipe.Disabled)
 							continue;
@@ -277,7 +268,6 @@ namespace EngagedSkyblock
 			ES_Weather.Update();
 			ES_GlobalWall.Update();
 			SpawnManager.Update();
-			AutoFisherTE.UpdateAll();
 		}
 		public override void Load() {
 			On_WorldFile.SaveWorld += On_WorldFile_SaveWorld;

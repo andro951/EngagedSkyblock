@@ -318,19 +318,15 @@ namespace EngagedSkyblock.Content.Liquids
         {
             Point combinePoint = new(x, y);
             int index = combinePoints.IndexOf(combinePoint);
-            if (index == -1)
-            {
+            if (index == -1) {
                 combinePoints.Add(combinePoint);
-                combineInfos.Add(new CombineInfo(combineDelay, () =>
-                {
+                combineInfos.Add(new CombineInfo(combineDelay, () => {
                     CheckCombineLiquids(x, y);
                 }));
             }
-            else
-            {
+            else {
                 CombineInfo combineInfo = combineInfos[index];
-                if (combineInfo.InitialDelay > delay)
-                {
+                if (combineInfo.InitialDelay > delay) {
                     combineInfo.Delay -= combineInfo.InitialDelay - delay;
                     combineInfo.InitialDelay = delay;
                 }
