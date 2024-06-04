@@ -43,8 +43,5 @@
     <Reference Include="TerrariaAutomations">
       <HintPath>..\TerrariaAutomations\bin\Debug\net8.0\TerrariaAutomations.dll</HintPath>
     </Reference>
-    <Reference Include="TileFunctionLibrary">
-      <HintPath>..\Mods\lib\TileFunctionLibrary.dll</HintPath>
-    </Reference>
   </ItemGroup>
 </Project>

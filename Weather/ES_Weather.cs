@@ -40,7 +40,6 @@ namespace EngagedSkyblock.Weather {
 			SnowFlake.TrySpawnSnowFlake();
 		}
 
-		public static bool Snowing => Main.SceneMetrics.EnoughTilesForSnow;
 		private static float snowMultiplier = 1f;
 		public static float SnowMultiplier => Main.SceneMetrics.SnowTileCount * snowMultiplier / SceneMetrics.SnowTileThreshold;
 		//public static bool CanSpawnSnow(ref int x, ref int y) {

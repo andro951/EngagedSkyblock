@@ -54,7 +54,7 @@ namespace EngagedSkyblock.Items {
 			if (!WorldGen.IsTileALeafyTreeTop(x, y) || Collision.SolidTiles(x - 2, x + 2, y - 2, y + 2))
 				return;
 
-			int stack = Main.rand.Next(5, 10);
+			int stack = Main.rand.Next(1, 3);
 			Item.NewItem(new EntitySource_ShakeTree(x, y), x * 16, y * 16, 16, 16, ModContent.ItemType<LeafBlock>(), stack);
 		}
 

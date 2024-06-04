@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 using static EngagedSkyblock.Common.Globals.ES_GlobalTile;
@@ -38,57 +39,74 @@ namespace EngagedSkyblock.Common.Globals
 
 		#region Tiles Hit by Hammer
 
-		public delegate bool orig_TileLoader_Drop(int x, int y, int type, bool includeLargeObjectDrops);
-		public delegate bool hook_TileLoader_Drop(orig_TileLoader_Drop orig, int x, int y, int type, bool includeLargeObjectDrops);
-		public static readonly MethodInfo TileLoaderDrop = typeof(TileLoader).GetMethod("Drop", BindingFlags.Public | BindingFlags.Static);
-		public static bool TileLoader_Drop_Detour(orig_TileLoader_Drop orig, int x, int y, int type, bool includeLargeObjectDrops) {
-			if (!ES_WorldGen.SkyblockWorld)
-				return orig(x, y, type, includeLargeObjectDrops);
-
-			foreach (KeyValuePair<int, Point> p in tilesJustHit) {
-				if (p.Value.X == x && p.Value.Y == y) {
-					bool returnFalse = !GlobalHammer.BreakTileWithHammerShouldDoVanillaDrop(x, y, type);
-                    Tile tile = Main.tile[x, y];
-					if (tile.HasTile && TileID.Sets.IsATreeTrunk[tile.TileType] && y < Main.maxTilesY - 1) {
-						tilesJustHit[p.Key] = p.Value + new Point(0, -1);
+		internal static void OnSpawn(Item item, IEntitySource source) {
+			if (source is EntitySource_TileBreak tileBreakSource) {
+				int tileType = -1;
+				foreach (var p in tilesJustHit) {
+					if (p.Value.tileLocation == tileBreakSource.TileCoords) {
+						tileType = p.Value.tileType;
+						break;
 					}
-					else {
-						tilesJustHit.Remove(p.Key);
+				}
+
+				if (tileType == -1) {
+					foreach (var p in tilesJustHit) {
+						if (TileID.Sets.IsATreeTrunk[p.Value.tileType] && Main.player[p.Key].HeldItem.TryGetGlobalItem(out GlobalHammer _)) {
+							tileType = p.Value.tileType;
+							break;
+						}
+					}
+				}
+
+				if (tileType != -1)
+					GlobalHammer.BreakTileWithHammer(tileBreakSource.TileCoords.X, tileBreakSource.TileCoords.Y, tileType, item);
+			}
+
+			if (source is EntitySource_ShakeTree shakeTreeSource) {
+				if (item.type == ItemID.Wood) {
+					int tileType = -1;
+					foreach (var p in tilesJustHit) {
+						if (p.Value.tileLocation == shakeTreeSource.TileCoords && Main.player[p.Key].HeldItem.TryGetGlobalItem(out GlobalHammer _)) {
+							tileType = p.Value.tileType;
+							break;
+						}
 					}
 
-					if (returnFalse)
-						return false;
-
-					break;
+					if (tileType != -1)
+						GlobalHammer.BreakTileWithHammer(shakeTreeSource.TileCoords.X, shakeTreeSource.TileCoords.Y, tileType, item);
 				}
 			}
-			
-			return orig(x, y, type, includeLargeObjectDrops);
 		}
-		private static SortedDictionary<int, Point> tilesJustHit = new();
+		private static SortedDictionary<int, (Point tileLocation, ushort tileType)> tilesJustHit = new();//key is player.whoAmI
 		private void On_Player_ItemCheck_UseMiningTools_ActuallyUseMiningTool(On_Player.orig_ItemCheck_UseMiningTools_ActuallyUseMiningTool orig, Player self, Item sItem, out bool canHitWalls, int x, int y) {
 			if (!ES_WorldGen.SkyblockWorld) {
 				orig(self, sItem, out canHitWalls, x, y);
 				return;
 			}
-			
+
 			if (sItem.TryGetGlobalItem(out GlobalHammer _) && GlobalHammer.IsHammerableTileType(x, y))
-				HitTile(x, y, self.whoAmI);
+				HitTile(x, y);
 
 			orig(self, sItem, out canHitWalls, x, y);
 		}
-		public static void HitTile(int x, int y, int playerWhoAmI) {
-			tilesJustHit.AddOrSet(playerWhoAmI, new(x, y));
+		public static void HitTile(int x, int y, ushort tileType = ushort.MaxValue, int playerWhoAmI = -1) {
+			if (playerWhoAmI == -1)
+				playerWhoAmI = Main.myPlayer;
+
+			if (tileType == ushort.MaxValue)
+				tileType = Main.tile[x, y].TileType;
+
+			tilesJustHit.AddOrSet(playerWhoAmI, (new(x, y), tileType));
 			if (Main.netMode == NetmodeID.MultiplayerClient) {
-				SendHitBlockPacket(x, y, playerWhoAmI);
+				SendHitBlockPacket(x, y, tileType);
 			}
 		}
-		private static void SendHitBlockPacket(int x, int y, int playerWhoAmI) {
+		private static void SendHitBlockPacket(int x, int y, ushort tileType) {
 			ModPacket modPacket = ES_Mod.Instance.GetPacket();
 			modPacket.Write((byte)ES_ModPacketID.HitTile);
-			modPacket.Write(x);
-			modPacket.Write(y);
-			modPacket.Write(playerWhoAmI);
+			modPacket.Write((short)x);
+			modPacket.Write((short)y);
+			modPacket.Write(tileType);
 			modPacket.Send();
 		}
 
@@ -561,7 +579,7 @@ namespace EngagedSkyblock.Common.Globals
 			if (tile.LiquidAmount > 0 && tile.LiquidType == LiquidID.Water)
 				return true;
 
-			return Main.raining && tile.HasTile && CountsAsMudPath(tile) && DirectPathToSky(x, y);
+			return Main.raining && !AndroUtilityMethods.Snowing && tile.HasTile && CountsAsMudPath(tile) && DirectPathToSky(x, y);
 		}
 		private static bool TouchingAir(int i, int j) => TouchingOtherBlock(i, j, (Tile tile) => !tile.HasTile);
 		private static bool TouchingWater(int i, int j) => TouchingBlock(i, j, (Tile tile) => tile.LiquidAmount > 0 && tile.LiquidType == LiquidID.Water);
@@ -643,7 +661,7 @@ namespace EngagedSkyblock.Common.Globals
 			if (SurroundedBy(i, j, CountsAsMudPath))
 				return true;
 
-			if (Main.raining && DirectPathToSky(i, j))
+			if (Main.raining && !AndroUtilityMethods.Snowing && DirectPathToSky(i, j))
 				return true;
 
 			if (TouchingMudWaterSource(i, j))
@@ -656,5 +674,10 @@ namespace EngagedSkyblock.Common.Globals
 		}
 
 		#endregion
+	}
+	public class ItemsBrokenWithHammer : GlobalItem {
+		public override void OnSpawn(Item item, IEntitySource source) {
+			ES_GlobalTile.OnSpawn(item, source);
+		}
 	}
 }

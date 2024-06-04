@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using androLib.Common.Utility;
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +28,9 @@ namespace EngagedSkyblock.Weather {
 			Projectile.coldDamage = true;
 		}
 		public static void TrySpawnSnowFlake() {
+			if (Main.netMode == NetmodeID.Server)
+				return;
+
 			if (!Main.raining)
 				return;
 
@@ -37,7 +41,7 @@ namespace EngagedSkyblock.Weather {
 				return;
 
 			//int snowBlocks = Main.SceneMetrics.SnowTileCount;
-			if (!ES_Weather.Snowing)
+			if (!AndroUtilityMethods.Snowing)
 				return;
 
 			//if (y > SnowStartHeight)
@@ -111,6 +115,7 @@ namespace EngagedSkyblock.Weather {
 						Main.projectile[num9].scale -= 0.5f;
 
 					Main.projectile[num9].velocity *= 1f + Main.cloudAlpha * 0.5f;
+					Main.projectile[num9].netUpdate = true;
 				}
 			}
 
@@ -136,7 +141,7 @@ namespace EngagedSkyblock.Weather {
 				return;
 			}
 
-			if (!ES_Weather.Snowing) {
+			if (!AndroUtilityMethods.Snowing) {
 				Projectile.Kill();
 				return;
 			}

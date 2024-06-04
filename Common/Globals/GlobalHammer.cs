@@ -88,35 +88,37 @@ namespace EngagedSkyblock.Common.Globals {
 			if (dict)
 				return true;
 
-			return CheckTileHammer(x, y, tile.TileType, out _, false) != null;
+			return CheckTileHammer(x, y, tile.TileType, out _, false);
 		}
-		public static bool BreakTileWithHammerShouldDoVanillaDrop(int x, int y, int type) {
+		public static bool BreakTileWithHammer(int x, int y, int tileType, Item item) {
 			int dropItemType;
-			int stack = 1;
-			if (TileHammerConversions.TryGetValue(type, out int dictionaryConversion)) {
+			if (TileHammerConversions.TryGetValue(tileType, out int dictionaryConversion)) {
 				dropItemType = dictionaryConversion;
 			}
 			else {
-				bool? checkTileHammer = CheckTileHammer(x, y, type, out dropItemType);
-				if (checkTileHammer == false) {
+				if (!CheckTileHammer(x, y, tileType, out dropItemType))
 					return false;
-				}
-				else if (checkTileHammer == true) {
-					goto SpawnTile;
-				}
+
+				if (dropItemType < 0)
+					return true;//Item destroyed for other type of conversion like 2 snow to 1 ice.
 			}
 
-			SpawnTile:
 			if (dropItemType >= 0) {
-				int num = Item.NewItem(WorldGen.GetItemSource_FromTileBreak(x, y), x * 16, y * 16, 16, 16, dropItemType, stack, noBroadcast: false, -1);
-				Main.item[num].TryCombiningIntoNearbyItems(num);
-				return false;
+				int stack = item.stack;
+				item.SetDefaults(dropItemType);
+				item.stack = stack;
+
+				return true;
 			}
 
-			return true;
+			return false;
 		}
-		public static bool? CheckTileHammer(int x, int y, int type, out int dropItemType, bool breakTile = true) {
-			if (y != Main.maxTilesY - 1 && type == TileID.SnowBlock) {
+
+		/// <summary>
+		/// Don't use Main.tile[x, y], it has already been destroyed by the time this is called.
+		/// </summary>
+		public static bool CheckTileHammer(int x, int y, int tileType, out int dropItemType, bool breakTile = true) {
+			if (y != Main.maxTilesY - 1 && tileType == TileID.SnowBlock) {
 				Tile below = Main.tile[x, y + 1];
 				if (below.HasTile && below.TileType == TileID.SnowBlock) {
 					if (breakTile) {
@@ -124,12 +126,12 @@ namespace EngagedSkyblock.Common.Globals {
 					}
 
 					dropItemType = -1;
-					return false;
+					return true;
 				}
 			}
 
-			if (TileID.Sets.IsATreeTrunk[type]) {
-				if (type >= TileID.TreeTopaz && type <= TileID.GemSaplings) {
+			if (TileID.Sets.IsATreeTrunk[tileType]) {
+				if (tileType >= TileID.TreeTopaz && tileType <= TileID.GemSaplings) {
 					dropItemType = ItemID.SandBlock;
 				}
 				else {
@@ -140,7 +142,7 @@ namespace EngagedSkyblock.Common.Globals {
 			}
 
 			dropItemType = -1;
-			return null;
+			return false;
 		}
 
 	}

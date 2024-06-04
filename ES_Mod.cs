@@ -20,7 +20,6 @@ namespace EngagedSkyblock
 			Instance = this;
 
 			hooks.Add(new(ES_WorldGen.ModLoaderModSystemModifyWorldGenTasks, ES_WorldGen.ModSystem_ModifyWorldGenTasks_Detour));
-			hooks.Add(new(ES_GlobalTile.TileLoaderDrop, ES_GlobalTile.TileLoader_Drop_Detour));
 			hooks.Add(new(ES_WorldGen.ModLoaderModSystemPostWorldGen, ES_WorldGen.ModSystem_PostWorldGen_Detour));
 			hooks.Add(new(LeafBlock.PlantLoaderShakeTree, LeafBlock.PlantLoaderShakeTreeDelegate));
 
@@ -50,10 +49,10 @@ namespace EngagedSkyblock
 						modPacket.Send(whoAmI);
 						break;
 					case ES_ModPacketID.HitTile:
-						int x = reader.ReadInt32();
-						int y = reader.ReadInt32();
-						int playerWhoAmI = reader.ReadInt32();
-						ES_GlobalTile.HitTile(x, y, playerWhoAmI);
+						int x = reader.ReadInt16();
+						int y = reader.ReadInt16();
+						ushort tileType = reader.ReadUInt16();
+						ES_GlobalTile.HitTile(x, y, tileType, whoAmI);
 						break;
 					default:
 						throw new Exception($"Received packet ID: {packetID}.  Not recognized.");
