@@ -1,4 +1,4 @@
 displayName = Engaged Skyblock
 author = andro951
-version = 0.1.0.1
-modReferences = androLib@1.0.7.5, LiquidsLib@0.1.0.1, TerrariaAutomations@0.1.0.0
+version = 0.1.0.2
+modReferences = androLib@1.0.7.11, LiquidsLib@0.1.0.1, TerrariaAutomations@0.1.1.0
