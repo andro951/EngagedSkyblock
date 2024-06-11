@@ -570,7 +570,7 @@ namespace EngagedSkyblock.Common.Globals
 			{ TileID.MushroomGrass, TileID.Grass }
 		};
 		private static bool HasMudPathToWater(int i, int j, int radius) {
-			return MaxDistancePathFinder.HasPath(i, j, radius, CountsAsMudPath, CountsAsMudWaterSource, Main.maxTilesX, Main.maxTilesY);
+			return new MaxDistancePathFinder().HasPath(i, j, CountsAsMudPath, CountsAsMudWaterSource, Main.maxTilesX, Main.maxTilesY, radius);
 		}
 		private static bool CountsAsMudPath(int x, int y) => CountsAsMudPath(Main.tile[x, y]);
 		private static bool CountsAsMudPath(Tile tile) => tile.HasTile && mudPathAllowedTiles.Contains(tile.TileType);

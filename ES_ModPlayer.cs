@@ -262,6 +262,24 @@ namespace EngagedSkyblock {
 		#region SafeSpawn
 
 		private static bool CanStandOnTile(int x, int y) => WorldGen.SolidTile(x, y) || TileID.Sets.Platforms[Framing.GetTileSafely(x, y).TileType];
+		private static bool SpaceEmptyExceptSafeLiquid(int x, int y) {
+			Tile tile = Main.tile[x, y];
+			int tileType = tile.TileType;
+			if (tile.HasTile && !tile.IsActuated && Main.tileSolid[tileType] && !Main.tileSolidTop[tileType])
+				return false;
+
+			if (tile.LiquidAmount == 0)
+				return false;
+
+			if (tile.LiquidType == LiquidID.Shimmer)
+				return false;
+
+			Player player = Main.LocalPlayer;
+			if (tile.LiquidType == LiquidID.Lava && !player.fireWalk && player.lavaMax <= 0)
+				return false;
+
+			return true;
+		}
 		private static bool CanStandOnTileCheckSpace(ref Point16 inPoint) {
 			int x = inPoint.X;
 			int y = inPoint.Y;
@@ -269,7 +287,7 @@ namespace EngagedSkyblock {
 				//Look up
 				while (y > 3) {
 					if (SpaceEmpty(x, y)) {
-						if (CanStandOnTile(x, y)) {
+						if (CanStandOnTile(x, y) || SpaceEmptyExceptSafeLiquid(x, y)) {
 							inPoint = new(x, y);
 							return true;
 						}
@@ -331,10 +349,10 @@ namespace EngagedSkyblock {
 		}
 		private static Vector2 FloorTileToSpawnPosition(Point16 floorPoint) => new Vector2(floorPoint.X * 16, floorPoint.Y * 16 - 42);
 		private void CheckSafeSpawn() {
-			Point16 position = Player.position.ToTileCoordinates16();
-			Point16 checkFloorPosition = position;
+			Point16 playerFloorPosition = Player.position.ToTileCoordinates16().PlayerPositionToFloorPosition();
+			Point16 checkFloorPosition = playerFloorPosition;
 			if (CanStandOnTileCheckSpace(ref checkFloorPosition)) {
-				if (checkFloorPosition != position) {
+				if (checkFloorPosition != playerFloorPosition) {
 					goto MovePlayer;
 				}
 				else {
@@ -363,6 +381,6 @@ namespace EngagedSkyblock {
 	}
 
 	public static class ES_ModPlayerStaticMethods {
-
+		public static Point16 PlayerPositionToFloorPosition(this Point16 playerPosition) => playerPosition + new Point16(0, 3);
 	}
 }

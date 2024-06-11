@@ -12,6 +12,7 @@ using Terraria.DataStructures;
 using Terraria.Enums;
 using Terraria.ID;
 using Terraria.ModLoader;
+using androLib.Tiles.TileData;
 using TerrariaAutomations.Tiles.TileEntities;
 
 namespace EngagedSkyblock.Content {
@@ -70,6 +71,12 @@ namespace EngagedSkyblock.Content {
 				Point16 playerCenterCoord = Main.LocalPlayer.Center.ToTileCoordinates16();
 				int playerX = playerCenterCoord.X;
 				int playerY = playerCenterCoord.Y;
+				int maxX = Main.maxTilesX;
+				int maxY = Main.maxTilesY;
+				var playerTileCoord = Main.LocalPlayer.Center.ToTileCoordinates();
+				int playerTileX = playerTileCoord.X;
+				int playerTileY = playerTileCoord.Y;
+				TilePipeData[] tilePipeData = Main.tile.GetData<TilePipeData>();
 				testingTimer++;
 				if (testingTimer >= testingTimerReset) {
 					testingTimer = 0;
