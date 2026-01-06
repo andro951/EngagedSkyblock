@@ -43,9 +43,18 @@ namespace EngagedSkyblock.Common.Globals {
 				PostUseActions();
 				PostUseActions = null;
 			}
-		}
+        }
+        public static void PostSetupRecipes() {
+            AddTileHammerConversion(ItemID.StoneBlock, ItemID.SandBlock);
+            AddTileHammerConversion(ItemID.SandBlock, ItemID.SiltBlock);
+            foreach (int woodItemType in RecipeGroup.recipeGroups[RecipeGroupID.Wood].ValidItems) {
+                AddTileHammerConversion(woodItemType, ModContent.ItemType<WoodChips>());
+            }
 
-		public static Action PostUseActions;
+            AddHammerMultiConversion(ItemID.IceBlock, 1, ItemID.SnowBlock, 2);
+        }
+
+        public static Action PostUseActions;
 		public override bool AltFunctionUse(Item item, Player player) {
 			if (!ES_WorldGen.SkyblockWorld)
 				return false;
@@ -99,14 +108,6 @@ namespace EngagedSkyblock.Common.Globals {
                 throw new Exception($"Block type {requiredBlock} is already used in another autohammer trade option: {existingOption}.");
 
             AutohammerTE.ItemTrader.AddOption_OneWay(requiredBlock, requiredStack, resultBlock, resultStack);
-        }
-        public static void PostSetupRecipes() {
-			AddTileHammerConversion(ItemID.StoneBlock, ItemID.SandBlock);
-			foreach (int woodItemType in RecipeGroup.recipeGroups[RecipeGroupID.Wood].ValidItems) {
-                AddTileHammerConversion(woodItemType, ModContent.ItemType<WoodChips>());
-            }
-
-			AddHammerMultiConversion(ItemID.IceBlock, 1, ItemID.SnowBlock, 2);
         }
 		public static bool IsHammerableTileType(int x, int y) {
 			Tile tile = Main.tile[x, y];
