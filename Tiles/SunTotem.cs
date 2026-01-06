@@ -14,50 +14,7 @@ using Terraria.ModLoader;
 using Terraria.ObjectData;
 
 namespace EngagedSkyblock.Tiles {
-	public class RainTotem : ModTile {
-		public override void Load() {
-			IL_Main.UpdateTime += IL_Main_UpdateTime;
-		}
-		private static void IL_Main_UpdateTime(ILContext il) {
-			//// if (Main.rand.NextDouble() <= 1.0 / (num2 * 5.75))
-			//IL_01fa: call class Terraria.Utilities.UnifiedRandom Terraria.Main::get_rand()
-			//IL_01ff: callvirt instance float64 Terraria.Utilities.UnifiedRandom::NextDouble()
-			//IL_0204: ldc.r8 1
-			//IL_020d: ldloc.3
-			//IL_020e: ldc.r8 5.75
-			//IL_0217: mul
-			//IL_0218: div
-
-			var c = new ILCursor(il);
-
-			if (!c.TryGotoNext(MoveType.After,
-				i => i.MatchCall(typeof(Main), "get_rand"),
-				i => i.MatchCallvirt(typeof(Terraria.Utilities.UnifiedRandom), "NextDouble"),
-				i => i.MatchLdcR8(1.0),
-				i => i.MatchLdloc(3),
-				i => i.MatchLdcR8(5.75),
-				i => i.MatchMul(),
-				i => i.MatchDiv()
-				)) {
-				throw new Exception("Failed to find instructions IL_Main_UpdateTime");
-			}
-
-			c.EmitDelegate(ModifyRainChance);
-		}
-		private static double ModifyRainChance(double chance) {
-			if (!ES_WorldGen.SkyblockWorld)
-				return chance;
-
-			if (SunTotem.TotemActive()) {
-				return 0d;
-			}
-
-			if (TotemActive()) {
-				chance *= 10d;
-			}
-
-			return chance;
-		}
+	public class SunTotem : ModTile {
 		public override void SetStaticDefaults() {
 			base.SetStaticDefaults();
 			Main.tileNoAttach[Type] = true;
@@ -97,7 +54,7 @@ namespace EngagedSkyblock.Tiles {
 		}
 		public static bool TotemActive() {
 			Tile tile = Main.tile[totemLocation.X, totemLocation.Y];
-			return tile.HasTile && tile.TileType == ModContent.TileType<RainTotem>();
+			return tile.HasTile && tile.TileType == ModContent.TileType<SunTotem>();
 		}
 	}
 }

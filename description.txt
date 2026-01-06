@@ -8,7 +8,7 @@ How do I make a Skyblock world?
 		skyblock
 		fortheworthyskyblock
 
-	Use one of the seeds.  fortheworthyskyblock starts you with the same skyblock, but has the vanilla fortheworthy settings while playing.  (Tree bombs Beware)
+	Use one of the seeds.  fortheworthyskyblock starts you with the same skyblock, but has the vanilla fortheworthy settings while playing.  (Beware of Tree bombs)
 
 Engaged Features
 	-Speedy Growth: Trees/Grass/etc grow faster when a player (that is running/moving fast/jumping) is nearby.  (Similar to Twerking for trees from Minecraft)
@@ -44,6 +44,8 @@ Engaged Features
 	-Snowball storm: Snowballs [i:949] will fall from the sky when it is snowing if a Rain Totem is placed in the world.  Snow will happen at high altitudes
 		(Between the top 1/5  of the world and space in any biome besides the desert when raining.)
 		(Snowballs [i:949] can be used to make snow blocks and deal minor damage to enemies.)
+
+	-Sun Totem: Prevents rain/snow
 
 	-Rain Totem: Makes rain 10 times more likely when placed in the world.  (Also makes snowballs [i:949] fall if snowing.)
 

@@ -45,7 +45,8 @@ namespace EngagedSkyblock
 		private static SortedDictionary<int, SortedSet<int>> allItemDrops = null;
 		public override void PostSetupContent() {
 			ExtractionManager.PostSetupContent();
-		}
+            GlobalAutohammer.PostSetupContent();
+        }
 
 		private static void SetupAllItemDrops() {
 			allItemDrops = new();

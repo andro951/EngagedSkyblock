@@ -52,8 +52,6 @@ namespace EngagedSkyblock.Content {
 
 
 
-
-
 			if (Debugger.IsAttached) {
 				Player player = Main.LocalPlayer;
 				int dungX = Main.dungeonX;//3608
@@ -81,7 +79,7 @@ namespace EngagedSkyblock.Content {
 				if (testingTimer >= testingTimerReset) {
 					testingTimer = 0;
 					Point16 spawnPoint = new Point16(Main.spawnTileX, Main.spawnTileY);
-					Dust testDust = Dust.NewDustPerfect(spawnPoint.ToWorldCoordinates(), ModContent.DustType<ExtractinatorDust>(), Vector2.Zero, newColor: Color.Red);
+					//Dust testDust = Dust.NewDustPerfect(spawnPoint.ToWorldCoordinates(), ModContent.DustType<ExtractinatorDust>(), Vector2.Zero, newColor: Color.Red);
 					bool failed = false;
 					double worldUpdateRate = WorldGen.GetWorldUpdateRate();
 					if (Main.netMode == 1 || worldUpdateRate <= 0)

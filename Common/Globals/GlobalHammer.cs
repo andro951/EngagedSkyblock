@@ -1,5 +1,6 @@
 ﻿using androLib.Common.Utility;
 using EngagedSkyblock.Items;
+using EngagedSkyblock.Tiles.TileEntities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -77,14 +78,39 @@ namespace EngagedSkyblock.Common.Globals {
 
 			return false;
 		}
-		public static SortedDictionary<int, int> TileHammerConversions = new();
-		public static void PostSetupRecipes() {
-			TileHammerConversions.Add(TileID.Stone, ItemID.SandBlock);
-			TileHammerConversions.Add(TileID.WoodBlock, ModContent.ItemType<WoodChips>());
-		}
+		private static readonly Dictionary<int, int> tileHammerConversionTiles = [];
+        public static void AddTileHammerConversion(int itemType, int resultItemType) {
+			Item item = new(itemType);
+			item.stack = item.maxStack;
+            int tileType = item.createTile;
+            if (tileType <= 0)
+                throw new Exception($"Item type {itemType} does not place a tile and cannot be used in a tile hammer conversion.");
+
+			if (AutohammerTE.ItemTrader.TryGetTradeOption(item, out Terraria.GameContent.ItemTrader.TradeOption existingOption))
+                throw new Exception($"Block type {itemType} is already used in another autohammer trade option: {existingOption}.");
+
+            tileHammerConversionTiles[tileType] = resultItemType;
+            AutohammerTE.ItemTrader.AddOption_OneWay(itemType, 1, resultItemType, 1);
+        }
+        public static void AddHammerMultiConversion(int resultBlock, int resultStack, int requiredBlock, int requiredStack) {
+			Item requiredBlockItem = new(requiredBlock);
+			requiredBlockItem.stack = requiredBlockItem.maxStack;
+			if (AutohammerTE.ItemTrader.TryGetTradeOption(requiredBlockItem, out Terraria.GameContent.ItemTrader.TradeOption existingOption))
+                throw new Exception($"Block type {requiredBlock} is already used in another autohammer trade option: {existingOption}.");
+
+            AutohammerTE.ItemTrader.AddOption_OneWay(requiredBlock, requiredStack, resultBlock, resultStack);
+        }
+        public static void PostSetupRecipes() {
+			AddTileHammerConversion(ItemID.StoneBlock, ItemID.SandBlock);
+			foreach (int woodItemType in RecipeGroup.recipeGroups[RecipeGroupID.Wood].ValidItems) {
+                AddTileHammerConversion(woodItemType, ModContent.ItemType<WoodChips>());
+            }
+
+			AddHammerMultiConversion(ItemID.IceBlock, 1, ItemID.SnowBlock, 2);
+        }
 		public static bool IsHammerableTileType(int x, int y) {
 			Tile tile = Main.tile[x, y];
-			bool dict = TileHammerConversions.ContainsKey(tile.TileType);
+			bool dict = tileHammerConversionTiles.ContainsKey(tile.TileType);
 			if (dict)
 				return true;
 
@@ -92,7 +118,7 @@ namespace EngagedSkyblock.Common.Globals {
 		}
 		public static bool BreakTileWithHammer(int x, int y, int tileType, Item item) {
 			int dropItemType;
-			if (TileHammerConversions.TryGetValue(tileType, out int dictionaryConversion)) {
+			if (tileHammerConversionTiles.TryGetValue(tileType, out int dictionaryConversion)) {
 				dropItemType = dictionaryConversion;
 			}
 			else {
@@ -144,6 +170,5 @@ namespace EngagedSkyblock.Common.Globals {
 			dropItemType = -1;
 			return false;
 		}
-
 	}
 }

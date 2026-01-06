@@ -36,12 +36,18 @@ Mods: {
 				DisplayName: Leaf Block
 				Tooltip: ""
 			}
+
+			SunTotem: {
+				DisplayName: Sun Totem
+				Tooltip: ""
+			}
 		}
 
 		Tiles: {
 			CrimsonAltar.MapEntry: Crimson Altar
 			DemonAltar.MapEntry: Demon Altar
 			RainTotem.MapEntry: Rain Totem
+			SunTotem.MapEntry: Sun Totem
 		}
 
 		Projectiles.SnowFlake.DisplayName: Snow Flake

@@ -29,7 +29,6 @@ namespace EngagedSkyblock
 
 			ES_WorldGen.Load();
 			ES_Weather.Load();
-			Tiles.RainTotem.Load();
 
 			ES_LocalizationData.RegisterSDataPackage();
 		}

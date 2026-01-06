@@ -487,7 +487,7 @@ namespace EngagedSkyblock.Common.Globals
 			if (type != TileID.Mud)
 				return false;
 
-			if (false && !Main.rand.NextBool(8640000))//TODO: remove false
+			if (!Main.rand.NextBool(8640000))
 				return false;
 
 			for (int directionID = 0; directionID < 4; directionID++) {

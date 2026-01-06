@@ -242,7 +242,7 @@ namespace EngagedSkyblock {
 				//Main.spawnTileX = Main.maxTilesX / 2 - 5;
 				//Main.spawnTileY = (int)Main.worldSurface - 55;
 				Main.spawnTileX = Main.maxTilesX / 2;
-				Main.spawnTileY = (int)(Main.worldSurface - 5);
+				Main.spawnTileY = (int)(Main.worldSurface - 35);
 				spawnX = Main.spawnTileX;
 				spawnY = Main.spawnTileY;
 				worldSurface = Main.worldSurface;

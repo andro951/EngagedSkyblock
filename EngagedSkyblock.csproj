@@ -8,7 +8,10 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Content\Dusts\GrowthDust.png" />
+    <None Remove="Content\GuideBook\Screenshots\GrowthEffect.PNG" />
     <None Remove="Content\GuideBook\Screenshots\Valid Dungeon.PNG" />
+    <None Remove="icon.png" />
+    <None Remove="icon_workshop.png" />
     <None Remove="Items\Sprites\CrimsonAltar.png" />
     <None Remove="Items\Sprites\DemonAltar.png" />
     <None Remove="Items\Sprites\LeafBlock.png" />

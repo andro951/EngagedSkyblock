@@ -21,14 +21,14 @@ namespace EngagedSkyblock.Content {
 					ItemID.HallowSandstone,
 					ItemID.SmoothSandstone
 				}),
-			(ES_ExtractID.Slush, new(
-				new List<TypeChancePair>() {
-					new(ItemID.Amber, 0.005f),
-					new(ItemID.SandBlock, 0.5f),
-				}),
-				new List<int>() {
-					ItemID.SlushBlock,
-				})
+			//(ES_ExtractID.Slush, new(
+			//	new List<TypeChancePair>() {
+			//		new(ItemID.Amber, 0.005f),
+			//		new(ItemID.SnowBlock, 0.5f),
+			//	}),
+			//	new List<int>() {
+			//		ItemID.SlushBlock,
+			//	})
 		};
 		public static void PostSetupContent() {
 			foreach (var set in ES_ExtractTypeSets) {
